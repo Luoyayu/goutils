@@ -1,0 +1,52 @@
+debug = true
+
+[bot]
+    [bot.0]
+        name = ""
+        token = ""
+        id = 00000
+        debug = false
+
+[channel]
+    [channel.sanqiu]
+        pub_url = ""
+        private_url = ""
+        name = "@XXXXX"
+        chat_id = -00000
+        desc = ""
+        owner = 0
+
+    [channel.gadio]
+        pub_url = ""
+        private_url = ""
+        name = "@XXXXXX"
+        chat_id = 0
+        desc = ""
+        owner = 0
+
+
+[gcore]
+    gapi = ""
+    debug = true
+
+
+[gcore_gadio]
+    image_api = ""
+    uploads_api = ""
+
+[gcore_redis]
+    addr = "127.0.0.1:6379"
+    enable = true
+    db = 1
+
+[sanqiu]
+    debug = true
+    base_url = ""
+    rss_path = ""
+    download_path = ""
+    info_path="/"
+
+[sanqiu_redis]
+    addr = "127.0.0.1:6379"
+    enable = true
+    db = 2
