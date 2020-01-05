@@ -58,7 +58,7 @@ func GetSongDownloadUrl(c *NetEaseClient, songId string, br int64) *DownloadData
 	return nil
 }
 
-// DownloadSong :下载一首歌
+// DownloadSong : download a song
 func DownloadSong(songName, songType, songUrl string, path string) (err error) {
 	if path == "" {
 		path, _ = os.Getwd()
@@ -98,11 +98,13 @@ func DownloadSong(songName, songType, songUrl string, path string) (err error) {
 	return
 }
 
+// DownloadSongs:
 func DownloadSongs(songsName, songsType, songsUrl []string, path string) (err error) {
 	size := len(songsName)
 	if size != len(songsType) || size != len(songsUrl) {
 		return errors.New("songs Name, songs Type, songs Url not match")
 	}
+
 	var wg sync.WaitGroup
 	wg.Add(size)
 	for i := 0; i < size; i++ {

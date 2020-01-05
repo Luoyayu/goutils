@@ -61,7 +61,8 @@ func (r *NetEaseClient) GetSongsDetail(songIds []int64) *SongsStruct {
 			"id": songId,
 		})
 	}
-	cBytes, _ := json.Marshal(c) // NECESSARY!
+
+	cBytes, _ := json.Marshal(c) // NECESSARY, only if server could recognize the params!
 
 	params := map[string]interface{}{
 		"e_r": false,
@@ -82,14 +83,6 @@ func (r *NetEaseClient) GetSongsDetail(songIds []int64) *SongsStruct {
 	return nil
 }
 
-/*
-func exampleDownloadSong() {
-	song := api.SongStruct{Id: 560079}
-	if err := song.Download("", -1); err != nil {
-		panic(err)
-	}
-}
-*/
 func (r *SongStruct) Download(c *NetEaseClient, savePath string, br int64) error {
 	if r.Id == 0 {
 		return errors.New("song id is None")
@@ -99,20 +92,6 @@ func (r *SongStruct) Download(c *NetEaseClient, savePath string, br int64) error
 	return DownloadSong(r.Name, url.Data.Type, url.Data.Url, savePath)
 }
 
-/*
-func exampleDownloadSongs() {
-	songs := api.SongsStruct{
-		Songs: []api.SongStruct{
-			{Id: 560079},
-			{Id: 1387099649},
-			{Id: 514774419},
-		},
-	}
-	if err := songs.Download("", nil); err != nil {
-		panic(err)
-	}
-}
-*/
 func (r *SongsStruct) Download(c *NetEaseClient, savePath string, br []int64) error {
 	if br == nil {
 		br = make([]int64, len(r.Songs))
@@ -124,7 +103,7 @@ func (r *SongsStruct) Download(c *NetEaseClient, savePath string, br []int64) er
 	for i, song := range r.Songs {
 		ids[i] = song.Id
 	}
-	r = c.GetSongsDetail(ids)
+	r = c.GetSongsDetail(ids) // cover old SongsStruct
 	for i, song := range r.Songs {
 		names[i] = song.Name
 		d := GetSongDownloadUrl(c, fmt.Sprint(song.Id), br[i])

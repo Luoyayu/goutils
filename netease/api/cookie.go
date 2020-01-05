@@ -3,9 +3,11 @@ package api
 import (
 	"bytes"
 	"encoding/gob"
+	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 )
 
+// data is a map containing only one pair of key-value: <MUSIC_U, "">
 func SaveCookies(path string, data map[string]string) (err error) {
 	b := new(bytes.Buffer)
 	if err = gob.NewEncoder(b).Encode(data); err == nil {
@@ -17,6 +19,8 @@ func SaveCookies(path string, data map[string]string) (err error) {
 			defer f.Close()
 		}
 	}
+
+	err = errors.Wrap(err, "Save Cookies")
 	return
 }
 
@@ -28,5 +32,6 @@ func LoadCookies(path string) (ret map[string]string, err error) {
 			defer f.Close()
 		}
 	}
+	err = errors.Wrap(err, "Load Cookies")
 	return
 }

@@ -13,12 +13,17 @@ func (r *Enc) New(key, data []byte) {
 	r.data = data
 }
 
-// New2 :接受变长参数, 类型: string or []byte, 第一参数: 默认text，双参数时为Key
+// New2 :接受变长参数, 类型: string or []byte, key 为空时，第一参数为key, 否则为text
 func (r *Enc) New2(args ...interface{}) *Enc {
 	switch len(args) {
 	case 1:
 		if r.key == nil {
-			panic("No aes Key")
+			switch args[0].(type) {
+			case string:
+				r.key = []byte(args[0].(string))
+			case []byte:
+				r.key = args[0].([]byte)
+			}
 		} else {
 			switch args[0].(type) {
 			case []byte:
@@ -66,7 +71,7 @@ func (r *Enc) EcbDecrypt() ([]byte, error) {
 		unpadding := int(decrypted[length-1])
 
 		if (length - unpadding) < 0 {
-			return nil, errors.New("error in unPadding")
+			return nil, errors.New("error in unPadding, wrong in bytes")
 		}
 		return PKCS7UnPadding(decrypted), nil
 	} else {

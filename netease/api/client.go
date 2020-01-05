@@ -1,28 +1,12 @@
 package api
 
-/*
-# example
-```
-	params := map[string]interface{}{
-		"verifyId": 1, "id": "514774419", "tv": "-1", "lv": "-1", "kv": "-1", "e_r": false,
-	}
-	data := api.EncData{}
-	_ = data.NewEnc("/api/song/lyric", params, false) // false -> use MUSIC_U; true -> MUSIC_A
-	if ret, err := data.DoPost(); err == nil {
-		log.Println(string(ret))
-	} else {
-		log.Println(err)
-	}
-```
-*/
-
 import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/luoyayu/goutils/enc"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -34,11 +18,11 @@ import (
 
 var (
 	magicKey        = []byte("e82ckenh8dichen8")
-	magicJoin       = "-36cd479b6b5-"
+	magicSeparator  = "-36cd479b6b5-"
 	DEBUG           = false
 	CookiesFileName = "cookies_gob"
 
-	// FIXED http request params `header`
+	// FIXED http request params `header`: w/o MUSIC_U in it
 	Header       string
 	HeaderSigned string
 	HeaderMap    map[string]interface{}
@@ -46,26 +30,26 @@ var (
 
 func debugln(name string, v ...interface{}) {
 	if DEBUG {
-		fmt.Println(name, ": ", v)
+		fmt.Println("✨", name, ":", v)
 	}
 }
 
 func debugV(name string, v interface{}) {
 	if DEBUG {
-		fmt.Printf("%s: %+v\n", name, v)
+		fmt.Printf("✨✨ %s: %+v\n", name, v)
 	}
 }
 
-var Signed = false
+var SINGED = false
 
 func init() {
 	DEBUG = os.Getenv("DEBUG") == "true"
 	cookiesMap, err := LoadCookies(CookiesFileName)
-	Signed = err == nil
+	SINGED = err == nil
 
-	log.Println("log in status:", Signed)
+	log.Println("log in status:", SINGED)
 
-	if Signed {
+	if SINGED {
 		HeaderMap = map[string]interface{}{"header": map[string]string{
 			"MUSIC_U": cookiesMap["MUSIC_U"],
 			"os":      "osx",
@@ -74,8 +58,8 @@ func init() {
 		HeaderSigned = string(b)
 
 	} else {
-		HeaderMap = map[string]interface{}{"HeaderMap": map[string]string{"" +
-			"os": "osx",
+		HeaderMap = map[string]interface{}{"header": map[string]string{
+			"os":     "osx",
 			"appver": "2.3.0"}}
 		b, _ := json.Marshal(HeaderMap)
 		Header = string(b)
@@ -83,6 +67,7 @@ func init() {
 }
 
 func initCookie() *cookiejar.Jar {
+	// channel=netease; os=osx
 	jar, _ := cookiejar.New(nil)
 	cookies := []*http.Cookie{
 		{
@@ -107,12 +92,12 @@ func initCookie() *cookiejar.Jar {
 // EncData :加/解密参数数据
 type EncData struct {
 	path          string // api with prefix /api/
-	dict          string // params dict for en/de crypt
+	dict          string // params dict for en/de*crypt
 	decryptedText string // decrypted Post body
 	encryptedText string // encrypted post body
 }
 
-// NetEaseClient :网易云HTTP客户端
+// NetEaseClient :
 type NetEaseClient struct {
 	c   *http.Client
 	q   *http.Request
@@ -122,12 +107,15 @@ type NetEaseClient struct {
 
 // NewDefaultHttpClient :新建默认客户端
 func (r *NetEaseClient) NewDefaultHttpClient() {
+	if r == nil {
+		panic("NewDefaultHttpClient called by nil(forget new a NetEaseClient?)")
+	}
 	r.c = &http.Client{
 		Jar: initCookie(),
 	}
 }
 
-// post :仅对加密的body有效
+// post :仅能发送加密的body
 func (r *NetEaseClient) post(url string) (b []byte, err error) {
 	if r.enc.encryptedText == "" {
 		err = errors.New("no encrypted body data")
@@ -142,6 +130,9 @@ func (r *NetEaseClient) post(url string) (b []byte, err error) {
 			debugln("Response Header", r.p.Header)
 
 			b, err = ioutil.ReadAll(r.p.Body)
+			debugln("Response Body", string(b))
+
+			// call SaveCookies to update user's MUSIC_U
 			auser := User{}
 			if err = json.Unmarshal(b, &auser); err == nil {
 				cookiesMap := map[string]string{}
@@ -151,9 +142,9 @@ func (r *NetEaseClient) post(url string) (b []byte, err error) {
 					err = SaveCookies(CookiesFileName, cookiesMap)
 				}
 			}
-
 		}
 	}
+	err = errors.Wrap(err, "*NetEaseClient.post")
 	return
 }
 
@@ -162,7 +153,7 @@ func (r *NetEaseClient) DoPost() (ret []byte, err error) {
 	var encryptDataHexStr string
 	if encryptDataHexStr, err = r.Encrypt(); err == nil {
 		r.enc.encryptedText = "params=" + encryptDataHexStr
-		debugln("encryptDataHexStr with params", r.enc.encryptedText)
+		debugln("encrypted Data Hex String with params", r.enc.encryptedText)
 		if ret, err = r.post("http://music.163.com/e" + r.enc.path[1:]); err == nil {
 			debugln("POST Response Body", string(ret))
 			retCode := struct {
@@ -175,28 +166,34 @@ func (r *NetEaseClient) DoPost() (ret []byte, err error) {
 			}
 		}
 	}
+	err = errors.Wrap(err, "*NetEaseClient.DoPost")
 	return
+}
+
+func (r *NetEaseClient) nobodyUseMd5forEncrypt() string {
+	return "nobody" + r.enc.path + "use" + r.enc.dict + "md5forencrypt"
 }
 
 func (r *NetEaseClient) NewEnc(path string, params map[string]interface{}) (err error) {
 	r.enc = &EncData{}
 	r.enc.path = path
 	if paramsStr, err := json.Marshal(params); err == nil {
-		if Signed {
+		if SINGED {
 			r.enc.dict = strings.TrimSuffix(HeaderSigned, "}") + "," + strings.TrimPrefix(string(paramsStr), "{")
 		} else {
-			debugln("Header", Header)
+			debugln("NewEnc Header", Header)
 			r.enc.dict = strings.TrimSuffix(Header, "}") + "," + strings.TrimPrefix(string(paramsStr), "{")
 		}
-		magic := "nobody" + r.enc.path + "use" + r.enc.dict + "md5forencrypt"
-		md5hexSign := enc.MD5HexStr(magic)
-		r.enc.decryptedText = strings.Join([]string{r.enc.path, r.enc.dict, md5hexSign}, magicJoin) // magicJoin
+		magic := r.nobodyUseMd5forEncrypt()
+		md5HexSign := enc.MD5HexStr(magic)
+		r.enc.decryptedText = strings.Join([]string{r.enc.path, r.enc.dict, md5HexSign}, magicSeparator)
 		if DEBUG {
-			debugln("dict", r.enc.dict)
-			debugln("sign", md5hexSign)
+			debugln("enc.dict", r.enc.dict)
+			debugln("md5HexSign", md5HexSign)
 			debugln("decryptedText", r.enc.decryptedText)
 		}
 	}
+	err = errors.Wrap(err, "NewEnc")
 	return
 }
 
@@ -205,9 +202,9 @@ func (r *NetEaseClient) Decrypt() (err error) {
 	var decryptBytes []byte
 	if decryptBytes, err = DecryptParams(r.enc.decryptedText); err == nil {
 		decryptStr := string(decryptBytes)
-		decryptList := strings.Split(decryptStr, magicJoin)
+		decryptList := strings.Split(decryptStr, magicSeparator)
 		if len(decryptList) < 3 {
-			return errors.New("decrypt failed")
+			return errors.New(fmt.Sprint("decrypt failed: split body by magicSeparator turning to", len(decryptList), "part"))
 		}
 		r.enc.path, r.enc.dict = decryptList[0], decryptList[1]
 	}
@@ -217,12 +214,13 @@ func (r *NetEaseClient) Decrypt() (err error) {
 // Encrypt Encrypt r.decryptedText by EcbEncrypt; return Encrypted Hex String
 func (r *NetEaseClient) Encrypt() (ret string, err error) {
 	ret, err = EncryptParams(r.enc.decryptedText)
+	err = errors.Wrap(err, "*NetEaseClient.Encrypt")
 	return
 }
 
 func EncryptParams(text string) (ret string, err error) {
 	if text == "" {
-		err = errors.New("decryptedText is None")
+		err = errors.Wrap(errors.New("decrypted Text is None"), "EncryptParams")
 		return
 	}
 	ecb := enc.Enc{}

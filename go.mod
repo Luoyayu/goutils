@@ -6,6 +6,7 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/PuerkitoBio/goquery v1.5.0 // indirect
 	github.com/anaskhan96/soup v1.1.1
+	github.com/beevik/ntp v0.2.0
 	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/golang/protobuf v1.3.2 // indirect

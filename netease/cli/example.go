@@ -49,8 +49,7 @@ func exampleLoginCellphone() {
 }
 
 func exampleSaveCookies() {
-
-	if err := api.SaveCookies("cookies_gob", map[string]string{"name1": "1", "name2": "22222222",}); err != nil {
+	if err := api.SaveCookies("cookies_gob", map[string]string{"MUSIC_U": "XXXXXX",}); err != nil {
 		panic(err)
 	} else {
 		log.Println("save !")
@@ -89,18 +88,37 @@ func exampleGetRecommendSong() {
 	} else {
 		panic(err)
 	}
+}
 
+func exampleSearchSongByName() {
+	ret := client.SearchSongByName(`Don't say "lazy"`)
+	log.Printf("%+v\n", ret.Result.Songs[0])
+}
+
+func exampleSearchSongByNameAndAlbum() {
+	ret := client.SearchSongByNameAndAlbum(`Don't say "lazy"`, "K-ON! Music History's Box")
+	log.Printf("%+v\n", ret)
 }
 
 func main() {
+	example()
+	//exampleLoginCellphone()
 
+	//exampleLoadCookies()
+	//exampleSaveCookies()
+	//
+	//exampleGetSongDetail()
+	//
 	//exampleDownloadSong()
 	//exampleDownloadSongs()
-	//exampleGetSongDetail()
+	//
+	//exampleGetRecommendSong() // need SINGED
+	//
+	//exampleSearchSongByName()
+	//exampleSearchSongByNameAndAlbum()
 
-	//exampleLoginCellphone()
-	//exampleSaveCookies()
-	//exampleLoadCookies()
+}
 
-	exampleGetRecommendSong()
+func example() {
+	exampleSearchSongByNameAndAlbum()
 }

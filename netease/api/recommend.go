@@ -6,7 +6,7 @@ import (
 )
 
 func (r *NetEaseClient) GetRecommend() (recommend *recommendStruct, err error) {
-	if Signed == false {
+	if SINGED == false {
 		err = errors.New("please login firstly")
 		return
 	}

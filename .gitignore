@@ -3,3 +3,6 @@
 build
 build/*
 *.exe
+
+cookies_gob
+cookies_*
