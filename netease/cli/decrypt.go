@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/luoyayu/netease_go/api"
+	"github.com/luoyayu/goutils/netease/api"
 	"os"
 )
 
