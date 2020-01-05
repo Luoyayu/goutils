@@ -20,23 +20,31 @@ func init() {
 }
 
 type DownloadDataStruct struct {
-	Data downloadData `json:"data"`
-	Code int64        `json:"code"`
+	Data struct {
+		Id    int64  `json:"id"`
+		Url   string `json:"url"`
+		Size  int64  `json:"size"`
+		Md5   string `json:"md5"`
+		Type  string `json:"type"`
+		Fee   int64  `json:"fee"`
+		Payed int64  `json:"payed"`
+		Flag  int    `json:"flag"`
+	} `json:"data"`
+	Code int64 `json:"code"`
 }
 
-type downloadData struct {
-	Id    int64  `json:"id"`
-	Url   string `json:"url"`
-	Size  int64  `json:"size"`
-	Md5   string `json:"md5"`
-	Type  string `json:"type"`
-	Payed int64  `json:"payed"`
-}
+const (
+	DownloadRAW  = 999000
+	DownloadHigh = 320000
+	DownloadMid  = 160000
+	DownloadLow  = 96000
+)
 
 // GetSongDownloadUrl 指定比特率, 从歌曲信息中获取, 实际上限更高, 非正数表示最高比特率
-func GetSongDownloadUrl(c *NetEaseClient, songId string, br int64) *DownloadDataStruct {
+func (r *NetEaseClient) GetSongDownloadUrl(songId string, br int64) *DownloadDataStruct {
+	// br: 999000, 320000, 160000, 96000
 	if br <= 0 {
-		br = 999000
+		br = DownloadRAW
 	}
 
 	params := map[string]interface{}{
@@ -44,8 +52,8 @@ func GetSongDownloadUrl(c *NetEaseClient, songId string, br int64) *DownloadData
 		"id":  songId,
 		"br":  br,
 	}
-	_ = c.NewEnc("/api/song/enhance/download/url", params)
-	if ret, err := c.DoPost(); err == nil {
+	_ = r.NewEnc("/api/song/enhance/download/url", params)
+	if ret, err := r.DoPost(); err == nil {
 		downloadInfo := DownloadDataStruct{}
 		err = json.Unmarshal(ret, &downloadInfo)
 		if downloadInfo.Code == 200 {

@@ -21,6 +21,8 @@ type SongStruct struct {
 	PublishTime int64   `json:"publishTime"`
 	AR          []ar    `json:"ar"` // artists
 	AL          ar      `json:"al"` // album
+
+	Privilege *songPrivilege
 }
 
 // 歌手/专辑
@@ -37,6 +39,7 @@ type songPrivilege struct {
 	Fee   int64 `json:"fee"`
 	Payed int64 `json:"payed"`
 	Dl    int64 `json:"dl"`    // 下载最大比特率
+	Pl    int64 `json:"pl"`    //
 	Maxbr int64 `json:"maxbr"` // 最大比特率
 
 }
@@ -73,7 +76,12 @@ func (r *NetEaseClient) GetSongsDetail(songIds []int64) *SongsStruct {
 	if ret, err := r.DoPost(); err == nil {
 		songsInfo := SongsStruct{}
 		err = json.Unmarshal(ret, &songsInfo)
+
 		if songsInfo.Code == 200 {
+			for i := range songsInfo.Songs {
+				songsInfo.Songs[i].Privilege = &songsInfo.Privileges[i]
+			}
+
 			debugln("songs Info", songsInfo)
 			return &songsInfo
 		}
@@ -88,7 +96,7 @@ func (r *SongStruct) Download(c *NetEaseClient, savePath string, br int64) error
 		return errors.New("song id is None")
 	}
 	r = c.GetSongDetail(r.Id)
-	url := GetSongDownloadUrl(c, fmt.Sprint(r.Id), br)
+	url := c.GetSongDownloadUrl(fmt.Sprint(r.Id), br)
 	return DownloadSong(r.Name, url.Data.Type, url.Data.Url, savePath)
 }
 
@@ -106,7 +114,7 @@ func (r *SongsStruct) Download(c *NetEaseClient, savePath string, br []int64) er
 	r = c.GetSongsDetail(ids) // cover old SongsStruct
 	for i, song := range r.Songs {
 		names[i] = song.Name
-		d := GetSongDownloadUrl(c, fmt.Sprint(song.Id), br[i])
+		d := c.GetSongDownloadUrl(fmt.Sprint(song.Id), br[i])
 		types[i] = d.Data.Type
 		urls[i] = d.Data.Url
 		debugln("song download info", ids[i], names[i], types[i], urls[i])

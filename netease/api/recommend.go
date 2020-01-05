@@ -7,7 +7,7 @@ import (
 
 func (r *NetEaseClient) GetRecommend() (recommend *recommendStruct, err error) {
 	if SINGED == false {
-		err = errors.New("please login firstly")
+		err = errors.New("please login or load cookies firstly")
 		return
 	}
 	params := map[string]interface{}{

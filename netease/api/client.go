@@ -57,13 +57,13 @@ func init() {
 		b, _ := json.Marshal(HeaderMap)
 		HeaderSigned = string(b)
 
-	} else {
-		HeaderMap = map[string]interface{}{"header": map[string]string{
-			"os":     "osx",
-			"appver": "2.3.0"}}
-		b, _ := json.Marshal(HeaderMap)
-		Header = string(b)
 	}
+	HeaderMap = map[string]interface{}{"header": map[string]string{
+		"os":     "osx",
+		"appver": "2.3.0"}}
+	b, _ := json.Marshal(HeaderMap)
+	Header = string(b)
+
 }
 
 func initCookie() *cookiejar.Jar {

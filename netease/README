@@ -1,7 +1,18 @@
 登录 需要两个环境变量 PHONE 和 PASSWD
-登录成功会生成 cookies 存在本地
+登录成功会生成 cookies (golang map[string]string{"MUSIC_U": "xxxx"} 持久化) 存在本地
 
-详细见 cli/example.go
-cli/decrypt.go 可用来解密params=XXXXX
+详细见 api/*_test.go
+cli/decrypt.go 可用来解密params=XXXXX的XXXXX部分
 
-支持: 日推获取, 下载单曲, 批量下载, 默认最高比特率, 可下载版权音乐, 未实现ncm转换, 获取歌单,
+实现:
+日推获取
+歌词获取
+查询单曲
+下载单曲
+按比特率批量下载
+下载版权音乐（需登录）
+
+未实现:
+ncm转换
+获取歌单
+下载歌单
