@@ -37,7 +37,7 @@ func NewDebugLogger() ILogger {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.DebugLevel)
 	logrus.SetFormatter(&logrus.TextFormatter{
-		FullTimestamp: true,
+		FullTimestamp: false,
 	})
 	return &defaultLogger{}
 }

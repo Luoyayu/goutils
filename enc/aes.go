@@ -28,14 +28,15 @@ func (r *Enc) New2(args ...interface{}) *Enc {
 			switch args[0].(type) {
 			case []byte:
 				b := args[0].([]byte)
-				r.New(r.key, b)
+				r.data = b
 			case string:
-				r.New(r.key, []byte(args[0].(string)))
+				r.data = []byte(args[0].(string))
 			default:
 				panic("New2 expect string or []byte")
 			}
 		}
 	case 2:
+		// FIXME:
 		r.New(args[0].([]byte), args[1].([]byte))
 	default:
 		panic(fmt.Sprint("New2 expect two params, but receive ", len(args)))
