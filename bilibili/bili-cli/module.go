@@ -1,82 +1,89 @@
 package main
 
+import "github.com/manifoldco/promptui"
+
 // home route
-const (
+var (
 	Home2Account   = "Account"
 	Home2Live      = "Live"
-	Home2Following = "Following"
-	Home2Setting   = "Setting"
+	Home2Following = "Following" + unImplemented
+	Home2Setting   = "Setting" + unImplemented
 	Home2Sync      = "Sync"
 	//Home2Home      = "Home"
 	//Home2Exit      = "Exit"
 )
 
+var (
+	implemented   = promptui.Styler(promptui.FGGreen)(" √")
+	unImplemented = promptui.Styler(promptui.FGRed)(" X")
+)
+
 // Account route
-const (
+var (
 	AccountRouteId = "@" + Home2Account
 
 	AccountCmdSelect       = CMDSelect + AccountRouteId
-	AccountCmdBlock        = CMDBlock + AccountRouteId
+	AccountCmdBlock        = CMDBlock + AccountRouteId + unImplemented
 	AccountCmdAdd          = CMDAdd + AccountRouteId
-	AccountCmdEdit         = CMDEdit + AccountRouteId
-	AccountCmdDelete       = CMDDelete + AccountRouteId
-	AccountCmdRefreshToken = CMDRefreshToken + AccountRouteId
+	AccountCmdEdit         = CMDEdit + AccountRouteId + unImplemented
+	AccountCmdDelete       = CMDDelete + AccountRouteId + unImplemented
+	AccountCmdRefreshToken = CMDRefreshToken + AccountRouteId + unImplemented
 )
 
 // Live route
-const (
+var (
 	LiveRouteId = "@" + Home2Live
 
 	LiveCmdSelect    = CMDSelect + LiveRouteId
 	LiveCmdStop      = CMDStop + LiveRouteId
-	LiveCmdBlock     = CMDBlock + LiveRouteId
+	LiveCmdBlock     = CMDBlock + LiveRouteId + unImplemented
 	LiveCmdAdd       = CMDAdd + LiveRouteId
 	LiveCmdRecommend = CMDRecommend + LiveRouteId
-	LiveCmdEdit      = CMDEdit + LiveRouteId
-	LiveCmdDelete    = CMDDelete + LiveRouteId
+	LiveCmdEdit      = CMDEdit + LiveRouteId + unImplemented
+	LiveCmdDelete    = CMDDelete + LiveRouteId + unImplemented
 )
 
 // Following route
-const (
+var (
 	FollowingRouteId = "@" + Home2Following
 
-	FollowingCmdSelect = CMDSelect + FollowingRouteId
-	FollowingCmdBlock  = CMDBlock + FollowingRouteId
-	FollowingCmdAdd    = CMDAdd + FollowingRouteId
-	FollowingCmdEdit   = CMDEdit + FollowingRouteId
-	FollowingCmdDelete = CMDDelete + FollowingRouteId
+	FollowingCmdSelect = CMDSelect + FollowingRouteId + unImplemented
+	FollowingCmdBlock  = CMDBlock + FollowingRouteId + unImplemented
+	FollowingCmdAdd    = CMDAdd + FollowingRouteId + unImplemented
+	FollowingCmdEdit   = CMDEdit + FollowingRouteId + unImplemented
+	FollowingCmdDelete = CMDDelete + FollowingRouteId + unImplemented
 )
 
 // Setting route
-const (
+var (
 	SettingRouteId = "@" + Home2Setting
 
-	SettingCmdSingleMode = "single-user" + SettingRouteId
-	SettingCmdMultiMode  = "multi-user" + SettingRouteId
-	SettingCmdReset      = CMDReset + SettingRouteId
+	SettingCmdSingleMode = "single-user" + SettingRouteId + unImplemented
+	SettingCmdMultiMode  = "multi-user" + SettingRouteId + unImplemented
+	SettingCmdReset      = CMDReset + SettingRouteId + unImplemented
 )
 
 // Sync route
-const (
+var (
 	SyncRouteId = "@" + Home2Sync
 
 	SyncCmdSyncFollowing = "sync following" + SyncRouteId
 	SyncCmdSyncLive      = "sync live" + SyncRouteId
 	SyncCmdSyncBoth      = "sync both" + SyncRouteId
 
-	SyncCmdUnCover = "uncover" + SyncRouteId // inherit `block` property
-	SyncCmdCover   = "cover" + SyncRouteId
+	SyncCmdUnCover = "uncover" + SyncRouteId + unImplemented // inherit `block` property
+	SyncCmdCover   = "cover" + SyncRouteId + unImplemented
 )
 
 // common route
-const (
+var (
 	CMDBack = "back"
 	CMDHome = "home"
 	CMDExit = "exit"
 )
 
 // common ops
-const (
+var (
 	CMDAdd          = "add"
 	CMDDelete       = "delete"
 	CMDEdit         = "edit"

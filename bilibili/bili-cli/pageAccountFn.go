@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/AlecAivazis/survey/v2"
 	biliAPI "github.com/luoyayu/goutils/bilibili"
-	"github.com/manifoldco/promptui"
 	"github.com/pkg/errors"
 	"strconv"
 	"strings"
@@ -22,12 +22,18 @@ func pageAccountSelect() {
 		pageAccountSelectItems[i] = fmt.Sprint(i, ". ", account.NikeName, " ", account.Uid)
 	}
 
-	prompt := promptui.Select{
-		Label: "select account to activate",
-		Items: pageAccountSelectItems,
-	}
+	/*	prompt := promptui.Select{
+			Label: "select account to activate",
+			Items: pageAccountSelectItems,
+		}
 
-	_, selectedUserStr, _ := prompt.Run()
+		_, selectedUserStr, _ := prompt.Run()
+	*/
+	selectedUserStr := promptSelect(
+		"select account to activate",
+		pageAccountSelectItems,
+
+	)
 	if selectedUserIndex, err := strconv.ParseInt(strings.Split(selectedUserStr, ". ")[0], 10, 32); err == nil {
 		AccountSelected = AccountsInDB[selectedUserIndex]
 		//log.Println(AccountSelected.Uid)
@@ -40,22 +46,28 @@ func pageAccountSelect() {
 }
 
 func pageAccountCMDAdd() {
-	validate := func(input string) error {
-		if len(input) == 0 {
+	validate := func(input interface{}) error {
+
+		if len(fmt.Sprint(input)) == 0 {
 			return errors.New("Username must not null")
 		}
 		return nil
 	}
-	inputLoginUserName := promptui.Prompt{
-		Label:    "phone/email",
-		Validate: validate,
-	}
-	inputPassword := promptui.Prompt{
-		Label: "password",
-		Mask:  '*',
-	}
-	loginUserName, _ := inputLoginUserName.Run()
-	password, _ := inputPassword.Run()
+	/*
+		inputLoginUserName := promptui.Prompt{
+			Label:    "phone/email",
+			Validate: validate,
+		}
+		inputPassword := promptui.Prompt{
+			Label: "password",
+			Mask:  '*',
+		}
+		loginUserName, _ := inputLoginUserName.Run()
+		password, _ := inputPassword.Run()
+	*/
+
+	loginUserName := promptInput("phone/email", survey.WithValidator(validate))
+	password := promptPassword("password")
 
 	loginDone := make(chan bool)
 	go printLoading(loginDone, 0)

@@ -47,6 +47,7 @@ func playLive(ctx context.Context, cid interface{}, params map[string]int, costu
 			go (&biliAPI.DanmakuClient{}).NewDanmakuClient(ctx, cid)
 		}
 
+		// FIXME: mpv more params can't parse!
 		go func(ctx context.Context, cid interface{}, url string, params map[string]int, costumedMpvArgs string) {
 			var playArgs []string
 

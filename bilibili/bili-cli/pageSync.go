@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/manifoldco/promptui"
+	"github.com/AlecAivazis/survey/v2"
 )
 
 func showPageSync() {
@@ -13,13 +13,19 @@ func showPageSync() {
 		CMDExit,
 	}
 
-	pageSync := promptui.Select{
-		Label: "sync followings or live or both from cloud",
-		Items: pageSyncSelectItems,
-		Size:  len(pageSyncSelectItems),
-	}
+	/*	pageSync := promptui.Select{
+			Label: "sync followings or live or both from cloud",
+			Items: pageSyncSelectItems,
+			Size:  len(pageSyncSelectItems),
+		}
 
-	_, nextRoute, _ := pageSync.Run()
+		_, nextRoute, _ := pageSync.Run()
+	*/
+	nextRoute := promptSelect(
+		"sync followings or live or both from cloud",
+		pageSyncSelectItems,
+		survey.WithPageSize(len(pageSyncSelectItems)),
+	)
 
 	switch nextRoute {
 	case SyncCmdSyncFollowing:

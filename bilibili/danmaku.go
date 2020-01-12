@@ -197,7 +197,7 @@ func (r *DanmakuClient) handleRecMsgType(msg []byte) {
 				log.Println(toLink)
 				fmt.Printf("🎁\033[31m%s\033[0m: %s %s\n", businessIdMap[businessId], linkUrl, strings.TrimRight(msgCommon, "，点击前往TA的房间去抽奖吧"))
 			} else {
-				fmt.Printf("🎁\033[31m%s\033[0m: %s %s\n", businessIdMap[businessId], toLink.Path, strings.TrimRight(msgCommon, "，点击前往TA的房间去抽奖吧"))
+				fmt.Printf("🎁\033[31m%s\033[0m: %s %s\n", businessIdMap[businessId], toLink.Host+toLink.Path, strings.TrimRight(msgCommon, "，点击前往TA的房间去抽奖吧"))
 			}
 
 		case 3: // 开通 ...

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/manifoldco/promptui"
+	"github.com/AlecAivazis/survey/v2"
 )
 
 func showPageLive() {
@@ -18,14 +18,20 @@ func showPageLive() {
 		CMDExit,
 	}
 
-	livePage := promptui.Select{
-		Label: AccountSelected.NikeName + ": " + fmt.Sprint(AccountSelected.Uid),
-		Items: pageLiveSelectItems,
-		Size:  len(pageLiveSelectItems),
-	}
+	/*	livePage := promptui.Select{
+			Label: AccountSelected.NikeName + ": " + fmt.Sprint(AccountSelected.Uid),
+			Items: pageLiveSelectItems,
+			Size:  len(pageLiveSelectItems),
+		}
 
-	var nextRoute = ""
-	_, nextRoute, _ = livePage.Run()
+		var nextRoute = ""
+		_, nextRoute, _ = livePage.Run()
+	*/
+	nextRoute := promptSelect(
+		AccountSelected.NikeName+": "+fmt.Sprint(AccountSelected.Uid),
+		pageLiveSelectItems,
+		survey.WithPageSize(len(pageLiveSelectItems)),
+	)
 
 	switch nextRoute {
 	case LiveCmdSelect:

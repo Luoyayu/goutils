@@ -2,7 +2,6 @@ package main
 
 import (
 	biliAPI "github.com/luoyayu/goutils/bilibili"
-	"github.com/manifoldco/promptui"
 	"log"
 	"math"
 	"sync"
@@ -48,18 +47,20 @@ func pageSyncCmdSyncFollowing(hintCoverFollowing bool) []*Following {
 	wg.Wait()
 
 	if hintCoverFollowing {
-		isCoverPage := promptui.Prompt{
+		/*isCoverPage := promptui.Prompt{
 			Label:     "cover local following data",
 			IsConfirm: true,
 		}
-		yn, _ := isCoverPage.Run()
+		yn, _ := isCoverPage.Run()*/
 
-		if yn == "y" {
+		yn := promptConfirm("cover local following data")
+
+		if yn == true {
 			FollowingInDB = followings
 			for _, ff := range followings {
 				_, _ = db.Exec(`REPLACE INTO Following(uid, fid) VALUES (?,?);`, ff.Uid, ff.Fid)
 			}
-		} else if yn == "n" {
+		} else if yn == false {
 			for _, ff := range followings {
 				r, err := db.Exec("SELECT COUNT(*) FROM Following WHERE uid=? AND fid=?;", ff.Uid, ff.Fid)
 				if err != nil {
@@ -122,20 +123,24 @@ func pageSyncCmdSyncLive(hintCoverLive, hintCoverFollowing, getAll bool) []*Live
 	wg.Wait()
 
 	if hintCoverLive {
-		isCoverPage := promptui.Prompt{
-			Label:     "cover local live data",
-			IsConfirm: true,
-		}
+		/*	isCoverPage := promptui.Prompt{
+				Label:     "cover local live data",
+				IsConfirm: true,
+			}
 
-		yn, _ := isCoverPage.Run()
-		if yn == "y" {
+			yn, _ := isCoverPage.Run()
+		*/
+
+		yn := promptConfirm("cover local live data")
+
+		if yn == true {
 			LiveInDB = live
 			for _, ff := range live {
 				_, _ = db.Exec(`
 				REPLACE INTO Live(uid,fid,cid,title,state,face) 
 				VALUES (?,?,?,?,?,?)`, ff.Uid, ff.Fid, ff.Cid, ff.Title, ff.State, ff.Face)
 			}
-		} else if yn == "n" {
+		} else if yn == false {
 			for _, ff := range live {
 				r, err := db.Exec("SELECT COUNT(*) FROM Live WHERE fid=? AND uid=?", ff.Fid, ff.Uid)
 				if err != nil {

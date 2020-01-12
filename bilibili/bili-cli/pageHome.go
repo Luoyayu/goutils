@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"github.com/manifoldco/promptui"
 )
@@ -17,7 +16,7 @@ func showPageHome() {
 		CMDExit,
 	}
 
-	homePage := promptui.Select{
+	/*homePage := promptui.Select{
 		Label: promptui.Styler(promptui.FGRed)("hallo! " + AccountSelected.NikeName + ": " + fmt.Sprint(AccountSelected.Uid)),
 		Items: homePageSelectItems,
 		Size:  len(homePageSelectItems),
@@ -28,7 +27,13 @@ func showPageHome() {
 
 	if _, nextRoute, err = homePage.Run(); err != nil {
 		Logger.Fatal(err)
-	}
+	}*/
+
+	nextRoute := promptSelect(
+		promptui.Styler(promptui.FGRed)("hallo! "+AccountSelected.NikeName+": "+fmt.Sprint(AccountSelected.Uid)),
+		homePageSelectItems,
+	)
+
 	switch nextRoute {
 	case Home2Account:
 		showPageAccount()

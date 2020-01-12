@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"github.com/manifoldco/promptui"
 )
 
@@ -16,18 +15,25 @@ func showPageAccount() {
 		CMDExit,
 	}
 
-	accountPage := promptui.Select{
+	/*accountPage := promptui.Select{
 		Label: "Account: " + promptui.Styler(promptui.FGRed)(AccountSelected.NikeName) + " - " + promptui.Styler(promptui.FGRed)(AccountSelected.Uid),
 		Items: accountPageSelectedItems,
 		Size:  len(accountPageSelectedItems),
 	}
+
 	nextPage := ""
 	err := errors.New("")
 
 	_, nextPage, err = accountPage.Run()
 	if err != nil {
 		Logger.Fatal(err)
-	}
+	}*/
+
+	nextPage := promptSelect(
+		"Account: "+promptui.Styler(promptui.FGRed)(AccountSelected.NikeName)+" - "+promptui.Styler(promptui.FGRed)(AccountSelected.Uid),
+		accountPageSelectedItems,
+	)
+
 	switch nextPage {
 	case AccountCmdSelect:
 		pageAccountSelect()

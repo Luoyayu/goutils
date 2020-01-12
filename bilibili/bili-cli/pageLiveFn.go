@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/AlecAivazis/survey/v2"
 	biliAPI "github.com/luoyayu/goutils/bilibili"
-	"github.com/manifoldco/promptui"
 	"strconv"
 	"strings"
 )
@@ -28,11 +28,14 @@ func subPageSelectLive(needUpdateForAccountSelected bool) int64 {
 			liveSelectItems = append(liveSelectItems, fmt.Sprintf("[%d] %s: %s", ll.Cid, ll.NikeName, ll.Title))
 		}
 	}
-	_, result, _ := (&promptui.Select{
+
+	/*_, result, _ := (&promptui.Select{
 		Label: "online live",
 		Items: liveSelectItems,
 		Size:  10,
-	}).Run()
+	}).Run()*/
+
+	result := promptSelect("online live", liveSelectItems, survey.WithPageSize(10))
 
 	tmp_ := strings.Split(result, " ")
 
@@ -79,13 +82,16 @@ func subPagePlaySelectedLive(cid interface{}, playControlBackToSelf bool) {
 		CMDHome,
 		CMDExit,
 	}
-	pageSelectPrompt := promptui.Select{
-		Label: "play live for " + uName,
-		Items: playSelectedLiveItems,
-		Size:  len(playSelectedLiveItems),
-	}
 
-	_, playCmd, _ := pageSelectPrompt.Run()
+	/*	pageSelectPrompt := promptui.Select{
+			Label: "play live for " + uName,
+			Items: playSelectedLiveItems,
+			Size:  len(playSelectedLiveItems),
+		}
+
+		_, playCmd, _ := pageSelectPrompt.Run()
+	*/
+	playCmd := promptSelect("play live for "+uName, playSelectedLiveItems, survey.WithPageSize(len(playSelectedLiveItems)))
 	if strings.HasPrefix(playCmd, "play:") {
 
 		ctx, cancel := context.WithCancel(context.Background())
@@ -99,9 +105,11 @@ func subPagePlaySelectedLive(cid interface{}, playControlBackToSelf bool) {
 		mpvOptions := ""
 
 		if playCmd == "play: costumed mpv args" {
-			mpvOptions, _ = (&promptui.Prompt{
+			/*mpvOptions, _ = (&promptui.Prompt{
 				Label: "mpv options, set --danmaku=<yes|no> default: yes",
-			}).Run()
+			}).Run()*/
+
+			mpvOptions = promptInput("mpv options, set --danmaku=<yes|no> default: yes")
 
 			if strings.Contains(mpvOptions, "--danmaku=yes") {
 				paramsMap["danmaku"] = 1
@@ -122,14 +130,23 @@ func subPagePlaySelectedLive(cid interface{}, playControlBackToSelf bool) {
 
 		go playLive(ctx, cid, paramsMap, mpvOptions)
 
-		_, controlCallback, _ := (&promptui.Select{
+		/*_, controlCallback, _ := (&promptui.Select{
 			Label: "control live " + playCmd,
 			Items: []string{
 				CMDBack,
 				CMDHome,
 				CMDExit,
 			},
-		}).Run()
+		}).Run()*/
+
+		controlCallback := promptSelect(
+			"control live "+playCmd,
+			[]string{
+				CMDBack,
+				CMDHome,
+				CMDExit,
+			},
+		)
 
 		switch controlCallback {
 		case CMDBack:
@@ -170,25 +187,52 @@ func pageLiveCmdBlock() {
 }
 
 func pageLiveCmdAdd() {
-	input, _ := (&promptui.Prompt{
-		Label: "rid:XXX / uid:XXX",
-		Validate: func(s string) error {
-			if strings.HasPrefix(s, "rid") == false || strings.HasPrefix(s, "uid") {
-				return errors.New("input must start with `rid:` or `uid:`")
-			} else {
-				sp := strings.Split(s, ":")
-				if len(sp) != 2 {
-					return errors.New("wrong format, input must like `rid:XXX` or `uid:YYY`")
+
+	input := promptInput("rid:XXX / uid:XXX",
+		survey.WithValidator(
+			func(ans interface{}) error {
+				s := fmt.Sprint(ans)
+				if strings.HasPrefix(s, "rid") == false || strings.HasPrefix(s, "uid") {
+					return errors.New("input must start with `rid:` or `uid:`")
+				} else {
+					sp := strings.Split(s, ":")
+					if len(sp) != 2 {
+						return errors.New("wrong format, input must like `rid:XXX` or `uid:YYY`")
+					}
+					if _, err := strconv.ParseInt(sp[1], 10, 64); err != nil {
+						return errors.New("input must end with a number")
+					}
 				}
-				if _, err := strconv.ParseInt(sp[1], 10, 64); err != nil {
-					return errors.New("input must end with a number")
+				return nil
+			}),
+	)
+
+	/*
+		input, _ := (&promptui.Prompt{
+			Label: "rid:XXX / uid:XXX",
+			Validate: func(s string) error {
+				if strings.HasPrefix(s, "rid") == false || strings.HasPrefix(s, "uid") {
+					return errors.New("input must start with `rid:` or `uid:`")
+				} else {
+					sp := strings.Split(s, ":")
+					if len(sp) != 2 {
+						return errors.New("wrong format, input must like `rid:XXX` or `uid:YYY`")
+					}
+					if _, err := strconv.ParseInt(sp[1], 10, 64); err != nil {
+						return errors.New("input must end with a number")
+					}
 				}
-			}
-			return nil
-		},
-	}).Run()
+				return nil
+			},
+		}).Run()*/
 
 	sp := strings.Split(input, ":")
+	if len(sp) == 0 || input == "" {
+		Logger.Error("无输入")
+		showPageLive()
+		return
+	}
+
 	if strings.TrimSpace(sp[0]) == "rid" {
 		subPagePlaySelectedLive(strings.TrimSpace(sp[1]), false)
 	} else {

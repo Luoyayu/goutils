@@ -28,6 +28,8 @@ var (
 )
 
 func init() {
+	initConfig()
+	fmt.Println(promptui.Styler(promptui.FGRed)("DEMO VERSION! any issue post to 'https://github.com/Luoyayu/goutils/tree/master/bilibili/bili-cli'"))
 	if runtime.GOOS == "windows" {
 		mpv += ".exe"
 	}

@@ -1,8 +1,8 @@
 package logger
 
 import (
+	"github.com/mattn/go-colorable"
 	"github.com/sirupsen/logrus"
-	"os"
 )
 
 type ILogger interface {
@@ -34,11 +34,14 @@ type defaultLogger struct {
 }
 
 func NewDebugLogger() ILogger {
-	logrus.SetOutput(os.Stdout)
+	//logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.DebugLevel)
 	logrus.SetFormatter(&logrus.TextFormatter{
+		ForceColors:   true,
 		FullTimestamp: false,
 	})
+	logrus.SetOutput(colorable.NewColorableStdout())
+
 	return &defaultLogger{}
 }
 
