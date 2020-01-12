@@ -16,10 +16,3 @@ require (
 	golang.org/x/sys v0.0.0-20191224085550-c709ea063b76 // indirect
 	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2
 )
-
-replace (
-	github.com/luoyayu/goutils => /Volumes/MacMisc/github/goutils/
-	github.com/luoyayu/goutils/bilibili => /Volumes/MacMisc/github/goutils/bilibili
-	github.com/luoyayu/goutils/enc => /Volumes/MacMisc/github/goutils/enc
-	github.com/luoyayu/goutils/logger => /Volumes/MacMisc/github/goutils/logger
-)
