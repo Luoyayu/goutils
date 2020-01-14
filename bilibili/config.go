@@ -1,5 +1,10 @@
 package biliAPI
 
+import (
+	"github.com/BurntSushi/toml"
+	"log"
+)
+
 var Config = &ConfigToml{}
 
 type ConfigToml struct {
@@ -22,6 +27,7 @@ type ConfigBiliAPI struct {
 	SearchWeb         string `toml:"search_web"`
 	SearchWebSuggest  string `toml:"search_web_suggest"`
 
+	SpaceArcSearch      string `toml:"space_arc_search"`
 	DynamicSpaceHistory string `toml:"dynamic_space_history"`
 
 	RoomInit    string `toml:"room_init"`
@@ -35,13 +41,52 @@ type ConfigBiliAPI struct {
 
 // implement by caller ! Config
 
-/*func initConfig() {
-	tomlPath := "config.toml"
+func init() {
+	//tomlPath := "config.toml"
+	tomlContent := `
+# android
+app_key    = "1d8b6e7d45233436"
+app_secret = "560c52ccd288fed045859ed18bffd973"
 
-	if _, err := toml.DecodeFile(tomlPath, &Config); err != nil {
-		panic(err)
+# host aes key
+magic_key = "7a840o62v39c41b8"
+
+debug = false
+
+[api]
+    login = "https://passport.bilibili.com"
+    user_info = "https://api.bilibili.com/x/space/acc/info"
+
+    relation_stat = "https://api.bilibili.com/x/relation/stat"
+    relation_followings = "https://api.bilibili.com/x/relation/followings" # can be replaced by dynamic url
+
+    search_mobi = "https://app.bilibili.com/x/v2/search"
+    search_mobi_suggest = "https://grpc.biliapi.net/bilibili.app.interface.v1.Search/Suggest3"
+
+    search_web = "https://api.bilibili.com/x/web-interface/search/type"
+    search_web_suggest = "https://s.search.bilibili.com/main/suggest"
+	
+	space_arc_search = "https://api.bilibili.com/x/space/arc/search" # 投稿查询
+
+    dynamic_space_history = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history"
+
+    room_init = "https://api.live.bilibili.com/room/v1/Room/room_init"
+    room_play_url = "https://api.live.bilibili.com/room/v1/Room/playUrl"
+    room_news_get = "https://api.live.bilibili.com/room_ex/v1/RoomNews/get"
+
+    live_get_user_recommend = "https://api.live.bilibili.com/room/v1/room/get_user_recommend"
+    live_my_following = "https://api.live.bilibili.com/xlive/web-ucenter/user/following" # need SESSDATA
+
+#    danmaku_host = "wss://broadcastlv.chat.bilibili.com:2245/sub"
+    danmaku_host = "wss://ks-live-dmcmt-sh2-pm-03.chat.bilibili.com/sub"
+    danmaku_host_2 = "wss://tx-gz3-live-comet-03.chat.bilibili.com/sub"
+    danmaku_host_3 = "wss://tx-sh3-live-comet-05.chat.bilibili.com/sub"
+
+`
+
+	if _, err := toml.Decode(tomlContent, &Config); err != nil {
 	} else if Config.Debug {
 		log.Printf("read from bilibili api config %+v\n", Config)
 		log.Printf("%#v\n", Config.API)
 	}
-}*/
+}

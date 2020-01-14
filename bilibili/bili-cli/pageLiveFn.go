@@ -12,56 +12,81 @@ import (
 
 var NowLive []*Live
 
+// for PlaySelected CMDBack
+var pageLivePlaySelected2Select bool
+var pageLivePlaySelected2Add bool
+var pageLivePlaySelected2Recommend bool
+
+func pageLivePlaySelectedBack() {
+	if pageLivePlaySelected2Recommend { // Recommend
+		pageLivePlaySelected2Recommend = false
+		pageLiveRecommend()
+	} else if pageLivePlaySelected2Select { // Select
+		pageLivePlaySelected2Select = false
+		pageLiveSelect(true)
+	} else if pageLivePlaySelected2Add { // Add
+		pageLivePlaySelected2Add = true
+		pageLiveAdd()
+	}
+}
+
+// end for PlaySelected CMDBack
+
 func updateNowLive() {
 	NowLive = pageSyncCmdSyncLive(false, false, false)
 }
 
-// if needUpdateForAccountSelected is false, you need to update NowLive []*Live
-func subPageSelectLive(needUpdateForAccountSelected bool) int64 {
-	if needUpdateForAccountSelected {
+// if updateAccountNowLive is false
+// you need to update NowLive []*Live manually
+func pageLiveSelect(updateAccountNowLive bool) {
+	if updateAccountNowLive {
 		updateNowLive()
 	}
 
-	liveSelectItems := make([]string, 0, len(NowLive))
+	liveSelectableItems := make([]string, 0, len(NowLive))
 	for _, ll := range NowLive {
 		if ll.State == 1 && ll.Blocked == 0 {
-			liveSelectItems = append(liveSelectItems, fmt.Sprintf("[%d] %s: %s", ll.Cid, ll.NikeName, ll.Title))
+			liveSelectableItems = append(liveSelectableItems, fmt.Sprintf("[%d] %s: %s", ll.Cid, ll.NikeName, ll.Title))
 		}
 	}
 
-	/*_, result, _ := (&promptui.Select{
-		Label: "online live",
-		Items: liveSelectItems,
-		Size:  10,
-	}).Run()*/
-
-	result := promptSelect("online live", liveSelectItems, survey.WithPageSize(10))
-
-	tmp_ := strings.Split(result, " ")
-
-	var selectedCid int64
-	if len(tmp_) > 0 && len(tmp_[0]) > 3 {
-		selectedCid, _ = strconv.ParseInt(tmp_[0][1:len(tmp_[0])-1], 10, 64)
-	} else {
-		Logger.Error("")
+	// 跳转：nobody online -> showPageLive
+	if len(liveSelectableItems) == 0 {
+		Logger.Warn("nobody online!")
+		showPageLive()
+		return
 	}
-	return selectedCid
+
+	result := strings.Split(promptSelect("online live", liveSelectableItems, survey.WithPageSize(10)), " ")
+
+	if len(result) > 0 && len(result[0]) > 3 {
+		ridStr := result[0][1 : len(result[0])-1]
+
+		if pageLivePlaySelected2Recommend == true {
+
+		} else {
+			pageLivePlaySelected2Select = true
+		}
+		pageLivePlaySelected(strings.TrimSpace(ridStr)) // 跳转：Select -> PlaySelected(rid)
+	} else {
+		showPageLive() // 跳转：Ctrl^C -> showPageLive
+		return
+	}
 }
 
-func subPagePlaySelectedLive(cid interface{}, playControlBackToSelf bool) {
-	r, _ := biliAPI.RoomInit(cid)
-	u, _ := biliAPI.GetUserInfo(r.Data.Uid)
+func pageLivePlaySelected(cid interface{}) {
+	r, err := biliAPI.RoomInit(cid)
+	if err != nil {
+		Logger.Error("get room info failed!")
+		showPageLive()
+		return
+	}
 
-	if r.Code != 0 {
-		Logger.Error(r.Message)
+	u, err := biliAPI.GetUserInfo(r.Data.Uid)
+	if err != nil {
+		Logger.Error("get room host info failed!")
 		showPageLive()
-	} else if r.Data.LiveStatus == 0 {
-		if u.Code == 0 {
-			Logger.Error("the live room for ", u.Data.Name, " now is closed!")
-		} else {
-			Logger.Error("the live room for ", r.Data.Uid, " now is closed!")
-		}
-		showPageLive()
+		return
 	}
 
 	uName := ""
@@ -71,29 +96,45 @@ func subPagePlaySelectedLive(cid interface{}, playControlBackToSelf bool) {
 		uName = fmt.Sprint(r.Data.Uid)
 	}
 
-	playSelectedLiveItems := []string{
+	if r.Code != 0 {
+		Logger.Error(r.Message)
+		showPageLive()
+		return
+	} else if r.Data.LiveStatus == 0 {
+		Logger.Error("the live room for ", uName, " now is closed!")
+		showPageLive()
+		return
+	}
+
+	playLiveSelectedItems := []string{
 		"play: video,sound,danmaku",
 		"play: sound",
 		"play: video,sound",
 		"play: sound,danmaku",
 		"play: danmaku",
 		"play: costumed mpv args",
-		CMDBack, // back to subPageSelectLive
+		CMDBack,
 		CMDHome,
 		CMDExit,
 	}
 
-	/*	pageSelectPrompt := promptui.Select{
-			Label: "play live for " + uName,
-			Items: playSelectedLiveItems,
-			Size:  len(playSelectedLiveItems),
+	playCmd := promptSelect("play live for "+uName, playLiveSelectedItems, survey.WithPageSize(len(playLiveSelectedItems)))
+	//Logger.Info("playCmd: ", playCmd)
+
+	if strings.HasPrefix(playCmd, "play: ") == false {
+		switch playCmd {
+		case CMDBack, "": // Ctrl^C or CMDBack
+			pageLivePlaySelectedBack()
+			return
+		case CMDHome:
+			showPageHome()
+			return
+		case CMDExit:
+			exitClear()
 		}
+	}
 
-		_, playCmd, _ := pageSelectPrompt.Run()
-	*/
-	playCmd := promptSelect("play live for "+uName, playSelectedLiveItems, survey.WithPageSize(len(playSelectedLiveItems)))
-	if strings.HasPrefix(playCmd, "play:") {
-
+	if strings.HasPrefix(playCmd, "play:") == true {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
@@ -101,20 +142,24 @@ func subPagePlaySelectedLive(cid interface{}, playControlBackToSelf bool) {
 			"danmaku": -1,
 			"video":   -1,
 			"sound":   -1,
-		} // 1:on, -1:off, 0:no-set
+		} // 1:on, -1:off, 0:not set
 		mpvOptions := ""
 
-		if playCmd == "play: costumed mpv args" {
-			/*mpvOptions, _ = (&promptui.Prompt{
-				Label: "mpv options, set --danmaku=<yes|no> default: yes",
-			}).Run()*/
-
-			mpvOptions = promptInput("mpv options, set --danmaku=<yes|no> default: yes")
+		if strings.Contains(playCmd, "mpv") {
+			mpvOptions = promptInput(&survey.Input{
+				Message: "mpv and danmaku options",
+				Default: "--danmaku=yes",
+				Help:    "mpv manual: mpv.io/manual/stable \n recommend options:\n--ontop: keep player on top\n",
+			})
 
 			if strings.Contains(mpvOptions, "--danmaku=yes") {
 				paramsMap["danmaku"] = 1
 				mpvOptions = strings.Replace(mpvOptions, "--danmaku=yes", "", -1)
+			} else if strings.Contains(mpvOptions, "--danmaku=no") {
+				paramsMap["danmaku"] = -1
+				mpvOptions = strings.Replace(mpvOptions, "--danmaku=no", "", -1)
 			}
+
 		} else {
 			params := strings.Split(strings.TrimPrefix(playCmd, "play: "), ",")
 			for i := range params {
@@ -122,133 +167,85 @@ func subPagePlaySelectedLive(cid interface{}, playControlBackToSelf bool) {
 			}
 		}
 
-		if paramsMap["danmaku"] == -1 && paramsMap["video"] == -1 && paramsMap["sound"] == -1 && mpvOptions == "" {
-			subPagePlaySelectedLive(cid, true)
-			return
-		}
-		// end stupid check
-
 		go playLive(ctx, cid, paramsMap, mpvOptions)
 
-		/*_, controlCallback, _ := (&promptui.Select{
-			Label: "control live " + playCmd,
-			Items: []string{
-				CMDBack,
-				CMDHome,
-				CMDExit,
-			},
-		}).Run()*/
-
-		controlCallback := promptSelect(
-			"control live "+playCmd,
-			[]string{
-				CMDBack,
-				CMDHome,
-				CMDExit,
-			},
-		)
-
-		switch controlCallback {
-		case CMDBack:
-			cancel()
-			if playControlBackToSelf {
-				subPagePlaySelectedLive(cid, true)
-				return
-			} else {
-				showPageLive()
-			}
-		case CMDHome:
-			cancel()
-			showPageHome()
-		case CMDExit:
-			cancel()
-			exitClear()
-		}
-	} else {
-		switch playCmd {
-		case CMDBack:
-			pageLiveCmdSelect()
-		case CMDHome:
-			showPageHome()
-		case CMDExit:
-			exitClear()
-		}
+		pageLivePlayControl(cid, playCmd, cancel)
 	}
 }
 
-func pageLiveCmdSelect() {
-
-	subPagePlaySelectedLive(subPageSelectLive(true), true)
-}
-
-func pageLiveCmdBlock() {
-	Logger.Warn("unimplemented method!")
-	showPageLive()
-}
-
-func pageLiveCmdAdd() {
-
-	input := promptInput("rid:XXX / uid:XXX",
-		survey.WithValidator(
-			func(ans interface{}) error {
-				s := fmt.Sprint(ans)
-				if strings.HasPrefix(s, "rid") == false || strings.HasPrefix(s, "uid") {
-					return errors.New("input must start with `rid:` or `uid:`")
-				} else {
-					sp := strings.Split(s, ":")
-					if len(sp) != 2 {
-						return errors.New("wrong format, input must like `rid:XXX` or `uid:YYY`")
-					}
-					if _, err := strconv.ParseInt(sp[1], 10, 64); err != nil {
-						return errors.New("input must end with a number")
-					}
-				}
-				return nil
-			}),
+func pageLivePlayControl(cid interface{}, playCmd string, cancel context.CancelFunc) {
+	controlCallback := promptSelect(
+		"control live with "+playCmd,
+		[]string{
+			CMDBack,
+			CMDHome,
+			CMDExit,
+		},
 	)
 
-	/*
-		input, _ := (&promptui.Prompt{
-			Label: "rid:XXX / uid:XXX",
-			Validate: func(s string) error {
-				if strings.HasPrefix(s, "rid") == false || strings.HasPrefix(s, "uid") {
-					return errors.New("input must start with `rid:` or `uid:`")
-				} else {
-					sp := strings.Split(s, ":")
-					if len(sp) != 2 {
-						return errors.New("wrong format, input must like `rid:XXX` or `uid:YYY`")
-					}
-					if _, err := strconv.ParseInt(sp[1], 10, 64); err != nil {
-						return errors.New("input must end with a number")
-					}
+	switch controlCallback {
+	case CMDBack:
+		cancel()
+		pageLivePlaySelected(cid)
+		return
+	case CMDHome:
+		cancel()
+		showPageHome()
+	case CMDExit:
+		cancel()
+		exitClear()
+	}
+}
+
+func pageLiveAdd() {
+	input := promptInput(&survey.Input{
+		Message: "rid:XXX / uid:XXX",
+		Default: "",
+		Help:    "add to play，input format must be `rid:`roomID or `uid:`up's uid",
+	}, survey.WithValidator(
+		func(ans interface{}) error {
+			s := fmt.Sprint(ans)
+			if strings.HasPrefix(s, "rid:") == false && strings.HasPrefix(s, "uid:") == false {
+				return errors.New("input must start with `rid:` or `uid:`")
+			} else {
+				sp := strings.Split(s, ":")
+				if len(sp) != 2 {
+					return errors.New("wrong format, input must be like `rid:XXX` or `uid:YYY`")
 				}
-				return nil
-			},
-		}).Run()*/
+				if _, err := strconv.ParseInt(sp[1], 10, 64); err != nil {
+					return errors.New("input must end with a number")
+				}
+			}
+			return nil
+		}),
+	)
 
 	sp := strings.Split(input, ":")
+
 	if len(sp) == 0 || input == "" {
-		Logger.Error("无输入")
 		showPageLive()
 		return
 	}
 
 	if strings.TrimSpace(sp[0]) == "rid" {
-		subPagePlaySelectedLive(strings.TrimSpace(sp[1]), false)
+		pageLivePlaySelected(strings.TrimSpace(sp[1]))
 	} else {
 		r, _ := biliAPI.GetRoomNews("", strings.TrimSpace(sp[1]))
 		if r.Code != 0 {
-
+			Logger.Error(r.Message)
+			showPageLive()
 		} else {
-			subPagePlaySelectedLive(r.Data.(map[string]interface{})["roomid"], false)
+			pageLivePlaySelected2Add = true
+			pageLivePlaySelected(r.Data.(map[string]interface{})["roomid"])
 		}
 	}
 }
 
-func pageLiveCmdRecommend() {
+func pageLiveRecommend() {
 	if AccountSelected.SESSDATA == "" || AccountSelected.Uid == 0 {
-		Logger.Error("you need to add and select account firstly")
+		Logger.Error("you need to add and select account firstly!")
 		showPageLive()
+		return
 	}
 	ret, err := biliAPI.GetLiveUserRecommend(AccountSelected.Uid, AccountSelected.SESSDATA, 1)
 	if err != nil {
@@ -256,7 +253,7 @@ func pageLiveCmdRecommend() {
 		showPageLive()
 	}
 	if ret.Code != 0 {
-		Logger.Error("Not found your")
+		Logger.Error("Not found your!")
 		showPageLive()
 	}
 
@@ -271,14 +268,21 @@ func pageLiveCmdRecommend() {
 		})
 	}
 
-	subPagePlaySelectedLive(subPageSelectLive(false), false)
+	pageLivePlaySelected2Recommend = true
+	pageLiveSelect(false)
 }
 
-func pageLiveCmdEdit() {
+func pageLiveBlock() {
+	Logger.Warn("unimplemented method!")
 	showPageLive()
 }
 
-func pageLiveCmdDelete() {
+func pageLiveEdit() {
+	Logger.Warn("unimplemented method!")
+	showPageLive()
+}
+
+func pageLiveDelete() {
 	Logger.Warn("unimplemented method!")
 	showPageLive()
 }

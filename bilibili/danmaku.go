@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/manifoldco/promptui"
 	"log"
 	"math/rand"
 	"net/url"
@@ -169,9 +170,9 @@ func (r *DanmakuClient) handleRecMsgType(msg []byte) {
 		isGuard := int64(postInfo[2].(float64))
 
 		if isGuard == 1 {
-			fmt.Printf("[🔧\033[32m%s\033[0m]: \033[34m%s\033[0m\n", posterName, message)
+			fmt.Printf("[🔧%s]: %s\n", promptui.Styler(promptui.FGGreen)(posterName), promptui.Styler(promptui.FGBlue)(message))
 		} else {
-			fmt.Printf("[\033[32m%s\033[0m]: \033[34m%s\033[0m\n", posterName, message)
+			fmt.Printf("[%s]: %s\n", promptui.Styler(promptui.FGGreen)(posterName), promptui.Styler(promptui.FGBlue)(message))
 		}
 	case "SEND_GIFT":
 	case "WELCOME":
@@ -195,9 +196,12 @@ func (r *DanmakuClient) handleRecMsgType(msg []byte) {
 			toLink, err := url.Parse(linkUrl)
 			if err != nil {
 				log.Println(toLink)
-				fmt.Printf("🎁\033[31m%s\033[0m: %s %s\n", businessIdMap[businessId], linkUrl, strings.TrimRight(msgCommon, "，点击前往TA的房间去抽奖吧"))
+				fmt.Print(fmt.Sprintf("🎁 %s: %s %s\n", promptui.Styler(promptui.FGRed)(businessIdMap[businessId]), linkUrl, strings.TrimRight(msgCommon, "，点击前往TA的房间去抽奖吧")))
+				//fmt.Printf("🎁\033[31m%s\033[0m: %s %s\n", businessIdMap[businessId], linkUrl, strings.TrimRight(msgCommon, "，点击前往TA的房间去抽奖吧"))
 			} else {
-				fmt.Printf("🎁\033[31m%s\033[0m: %s %s\n", businessIdMap[businessId], toLink.Host+toLink.Path, strings.TrimRight(msgCommon, "，点击前往TA的房间去抽奖吧"))
+				fmt.Print(fmt.Sprintf("🎁 %s: %s %s\n", promptui.Styler(promptui.FGRed)(businessIdMap[businessId]), toLink.Host+toLink.Path, strings.TrimRight(msgCommon, "，点击前往TA的房间去抽奖吧")))
+
+				//fmt.Printf("🎁\033[31m%s\033[0m: %s %s\n", businessIdMap[businessId], toLink.Host+toLink.Path, strings.TrimRight(msgCommon, "，点击前往TA的房间去抽奖吧"))
 			}
 
 		case 3: // 开通 ...

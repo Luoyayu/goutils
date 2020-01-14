@@ -3,9 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
-	"fmt"
 	biliAPI "github.com/luoyayu/goutils/bilibili"
-	"log"
 	"net/http"
 	"os/exec"
 	"strings"
@@ -17,11 +15,13 @@ func playLive(ctx context.Context, cid interface{}, params map[string]int, costu
 	ret, err := biliAPI.GetRoomPlayUrl(cid)
 	if err != nil {
 		Logger.Error(err)
+		showPageLive()
 		return
 	}
 
 	if ret.Code != 0 || ret.Data == nil {
 		Logger.Error(ret.Message)
+		showPageLive()
 		return
 	}
 
@@ -36,12 +36,14 @@ func playLive(ctx context.Context, cid interface{}, params map[string]int, costu
 		break
 	}
 
-	fmt.Println("play:", streamUrl)
-	log.Printf("3 params: %+v\n", params)
-	log.Printf("costumed mpv params: %+v\n", costumedMpvArgs)
+	//Logger.Info("play:", streamUrl)
+	//Logger.Info("3 params: %v\n", params)
+	//Logger.Infof("costumed mpv params: %s\n", costumedMpvArgs)
 
 	if streamUrl == "" {
 		Logger.Error("no available live stream!")
+		showPageLive()
+		return
 	} else {
 		if params["danmaku"] == 1 {
 			go (&biliAPI.DanmakuClient{}).NewDanmakuClient(ctx, cid)
@@ -49,7 +51,7 @@ func playLive(ctx context.Context, cid interface{}, params map[string]int, costu
 
 		// FIXME: mpv more params can't parse!
 		go func(ctx context.Context, cid interface{}, url string, params map[string]int, costumedMpvArgs string) {
-			var playArgs []string
+			var playArgs = []string{}
 
 			// --cache=<yes|no|auto>
 			// --no-cache
@@ -64,11 +66,19 @@ func playLive(ctx context.Context, cid interface{}, params map[string]int, costu
 				playArgs = append(playArgs, "--no-video")
 			}
 
-			playArgs = append(playArgs, costumedMpvArgs, streamUrl)
+			if costumedMpvArgs != "" {
+				playArgs = append(playArgs, costumedMpvArgs, streamUrl)
+			} else {
+				playArgs = append(playArgs, streamUrl)
+			}
 
-			log.Println("mpv:", playArgs)
+			//Logger.Info("mpv:", playArgs)
 
 			cmd := exec.Command(mpv, playArgs...)
+			//cmd := exec.Cmd{
+			//	Args: playArgs,
+			//}
+
 			out := &bytes.Buffer{}
 
 			cmd.Stdout = out
@@ -81,43 +91,40 @@ func playLive(ctx context.Context, cid interface{}, params map[string]int, costu
 			if err == nil {
 				MpvPid = int32(cmd.Process.Pid)
 			}
-			//log.Println("start err:", err)
-			//log.Println("mpv pid:", cmd.Process.Pid)
+
+			//Logger.Info("mpv pid:", cmd.Process.Pid)
 
 			go func(out *bytes.Buffer) {
-				tm := time.NewTicker(time.Second * 3)
+				tm := time.NewTicker(time.Second * 5)
 				for {
 					select {
 					case <-tm.C:
 						return
 					default:
+						//Logger.Info(out.String())
 						if strings.Contains(out.String(), "option not found") {
-							Logger.Error(strings.Split(out.String(), "\n")[0])
+							Logger.Error(strings.Split(out.String(), "\n"))
 							return
 						}
+						time.Sleep(time.Second * 1)
 					}
 				}
 			}(out)
 
 			select {
 			case <-ctx.Done():
-				//log.Println("context is canceled: kill mpv player")
+				//Logger.Info("context is canceled: kill mpv player")
 				stopMpvSafely()
 				return
 			}
 
 		}(ctx, cid, streamUrl, params, costumedMpvArgs)
 
-		/*fmt.Println("video:", params["video"])
-		fmt.Println("sound:", params["sound"])
-		fmt.Println("danmaku:", params["danmaku"])
-		fmt.Println("live url:", streamUrl)*/
-
 		select {
 		case <-ctx.Done():
-			log.Println("received Stop signal")
+			//Logger.Info("received Stop signal")
 			return
 		}
 	}
-	log.Println("play Live END!")
+	//Logger.Info("play Live END!")
 }

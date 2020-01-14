@@ -33,13 +33,15 @@ debug = false
     user_info = "https://api.bilibili.com/x/space/acc/info"
 
     relation_stat = "https://api.bilibili.com/x/relation/stat"
-    relation_followings = "https://api.bilibili.com/x/relation/followings" # can be replced by dynamic url
+    relation_followings = "https://api.bilibili.com/x/relation/followings" # can be replaced by dynamic url
 
     search_mobi = "https://app.bilibili.com/x/v2/search"
     search_mobi_suggest = "https://grpc.biliapi.net/bilibili.app.interface.v1.Search/Suggest3"
 
     search_web = "https://api.bilibili.com/x/web-interface/search/type"
     search_web_suggest = "https://s.search.bilibili.com/main/suggest"
+	
+	space_arc_search = "https://api.bilibili.com/x/space/arc/search" # 投稿查询
 
     dynamic_space_history = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history"
 

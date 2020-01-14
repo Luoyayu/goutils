@@ -6,7 +6,7 @@ import (
 )
 
 func showPageLive() {
-	pageLiveSelectItems := []string{
+	options := []string{
 		LiveCmdSelect,
 		LiveCmdStop,
 		LiveCmdAdd,
@@ -18,43 +18,35 @@ func showPageLive() {
 		CMDExit,
 	}
 
-	/*	livePage := promptui.Select{
-			Label: AccountSelected.NikeName + ": " + fmt.Sprint(AccountSelected.Uid),
-			Items: pageLiveSelectItems,
-			Size:  len(pageLiveSelectItems),
-		}
-
-		var nextRoute = ""
-		_, nextRoute, _ = livePage.Run()
-	*/
 	nextRoute := promptSelect(
 		AccountSelected.NikeName+": "+fmt.Sprint(AccountSelected.Uid),
-		pageLiveSelectItems,
-		survey.WithPageSize(len(pageLiveSelectItems)),
+		options,
+		survey.WithPageSize(len(options)),
 	)
 
 	switch nextRoute {
 	case LiveCmdSelect:
-		pageLiveCmdSelect()
+		pageLivePlaySelected2Select = true
+		pageLiveSelect(true)
 	case LiveCmdStop:
 		stopMpvSafely()
 		showPageLive()
 	case LiveCmdRecommend:
-		pageLiveCmdRecommend()
-	case LiveCmdBlock:
-		pageLiveCmdBlock()
-	case LiveCmdAdd:
-		pageLiveCmdAdd()
-	case LiveCmdEdit:
-		pageLiveCmdEdit()
-	case LiveCmdDelete:
-		pageLiveCmdDelete()
-	case CMDHome:
 
+		pageLiveRecommend()
+	case LiveCmdBlock:
+		pageLiveBlock()
+	case LiveCmdAdd:
+		pageLiveAdd()
+	case LiveCmdEdit:
+		pageLiveEdit()
+	case LiveCmdDelete:
+		pageLiveDelete()
+	case CMDHome:
 		showPageHome()
 	case CMDExit:
 		exitClear()
 	default:
-		Logger.Fatal("unknown route:", nextRoute)
+		//Logger.Fatal("unknown route:", nextRoute)
 	}
 }

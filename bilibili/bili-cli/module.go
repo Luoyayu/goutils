@@ -6,7 +6,7 @@ import "github.com/manifoldco/promptui"
 var (
 	Home2Account   = "Account"
 	Home2Live      = "Live"
-	Home2Following = "Following" + unImplemented
+	Home2Following = "Following"
 	Home2Setting   = "Setting" + unImplemented
 	Home2Sync      = "Sync"
 	//Home2Home      = "Home"
@@ -47,9 +47,9 @@ var (
 var (
 	FollowingRouteId = "@" + Home2Following
 
-	FollowingCmdSelect = CMDSelect + FollowingRouteId + unImplemented
+	FollowingCmdSelect = CMDSelect +"Video"+ FollowingRouteId
 	FollowingCmdBlock  = CMDBlock + FollowingRouteId + unImplemented
-	FollowingCmdAdd    = CMDAdd + FollowingRouteId + unImplemented
+	FollowingCmdAdd    = CMDAdd + FollowingRouteId
 	FollowingCmdEdit   = CMDEdit + FollowingRouteId + unImplemented
 	FollowingCmdDelete = CMDDelete + FollowingRouteId + unImplemented
 )

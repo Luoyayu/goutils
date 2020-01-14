@@ -3,7 +3,6 @@ package biliAPI
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -37,9 +36,9 @@ func GetSearch(keyword, searchType, order string, pageId int) (*searchRetStruct,
 	resp := &http.Response{}
 	var err error
 	if resp, err = http.Get(Config.API.SearchWeb + "?" + l.Encode()); err == nil {
-		b, _ := ioutil.ReadAll(resp.Body)
 		ret := &searchRetStruct{}
-		err = json.Unmarshal(b, &ret)
+		err = json.NewDecoder(resp.Body).Decode(&ret)
+		defer resp.Body.Close()
 		return ret, err
 	}
 	return nil, err
@@ -97,9 +96,9 @@ func GetSearchSuggest(term string) (*searchSuggestRetStruct, error) {
 		l.Add(k, fmt.Sprint(v))
 	}
 	if resp, err = http.Get(Config.API.SearchWebSuggest + "?" + l.Encode()); err == nil {
-		b, _ := ioutil.ReadAll(resp.Body)
 		ret := &searchSuggestRetStruct{}
-		err = json.Unmarshal(b, &ret)
+		err = json.NewDecoder(resp.Body).Decode(&ret)
+		defer resp.Body.Close()
 		return ret, err
 	}
 	return nil, err
@@ -117,4 +116,70 @@ type searchSuggestResultTag struct {
 	Ref   int    `json:"ref"`
 	Name  string `json:"name"`
 	SpId  int    `json:"spid"`
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+type SpaceArcSearchRet struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    *struct {
+		List *struct {
+			TList map[string]SpaceArcSearchTList `json:"tlist"`
+			VList []*SpaceArcSearchVList         `json:"vlist"`
+		} `json:"list"`
+		Page *struct {
+			Count int `json:"count"`
+			Pn    int `json:"pn"`
+			Ps    int `json:"ps"`
+		} `json:"page"`
+	} `json:"data"`
+}
+
+type SpaceArcSearchTList struct {
+	Tid   int64  `json:"tid"`
+	Count int    `json:"count"`
+	Name  string `json:"name"`
+}
+
+type SpaceArcSearchVList struct {
+	Comment      int    `json:"comment"`
+	TypeId       int    `json:"typeid"`
+	Play         int    `json:"play"`
+	Pic          string `json:"pic"`
+	Description  string `json:"description"`
+	Title        string `json:"title"`
+	Author       string `json:"author"`
+	MId          int64  `json:"mid"`
+	Created      int64  `json:"created"`
+	Length       string `json:"length"`
+	VideoReview  int    `json:"video_review"`
+	Aid          int64  `json:"aid"`
+	isPay        int
+	isUnionVideo int
+}
+
+func GetSpaceArcSearch(mid interface{}, ps, pn, tid int) (*SpaceArcSearchRet, error) {
+	params := map[string]interface{}{
+		"mid":     mid,
+		"ps":      ps,
+		"pn":      pn,
+		"order":   "pubdate",
+		"jsonp":   "jsonp",
+		"tid":     tid,
+		"keyword": "",
+	}
+
+	var err error
+	l := url.Values{}
+	resp := &http.Response{}
+	for k, v := range params {
+		l.Add(k, fmt.Sprint(v))
+	}
+
+	if resp, err = http.Get(Config.API.SpaceArcSearch + "?" + l.Encode()); err == nil {
+		ret := &SpaceArcSearchRet{}
+		err = json.NewDecoder(resp.Body).Decode(&ret)
+		return ret, err
+	}
+	return nil, err
 }

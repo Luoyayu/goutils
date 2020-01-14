@@ -34,7 +34,6 @@ func TestGetLiveUserRecommend(t *testing.T) {
 		panic(err)
 	} else {
 		if ret.Code != 0 {
-			log.Println(ret.Message, ret.Msg)
 		} else {
 			for _, f := range ret.Data {
 				log.Println(f.Uid, f.UName, f.Title)

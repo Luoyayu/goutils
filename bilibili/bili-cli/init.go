@@ -34,19 +34,18 @@ func init() {
 		mpv += ".exe"
 	}
 
-	promptui.IconInitial = promptui.Styler(promptui.FGCyan)(">")
-	promptui.IconSelect = promptui.Styler(promptui.FGRed)("λ")
-
 	AccountSelected, UserSelected = &Account{}, &User{}
 
-	AccountSelected.NikeName = "offline mode"
+	AccountSelected.NikeName = "本地模式"
 	AccountSelected.Uid = 2333
 
 	var dbFile *os.File
 	var err error
 
 	if dbFile, err = os.Open("data.db"); err != nil { // firstly use the cli-app
-		fmt.Println("initialize database...")
+		Logger.Info("initialize database...")
+		Logger.Info("欢迎使用，本软件支持多账户，推荐登录使用：Account -> add -> select")
+		//Logger.Info("本地使用，请使用 Sync 同步关注")
 		if dbFile, err = os.Create(databaseName); err == nil {
 			defer dbFile.Close()
 
@@ -96,19 +95,14 @@ func printLoading(done chan bool, d time.Duration) {
 }
 
 func stopMpvSafely() {
-	//log.Println("MpvPid:", MpvPid)
 	if MpvPid != -1 {
 		p, _ := process.NewProcess(MpvPid)
 
 		if err := p.Kill(); err != nil {
-			log.Println(err)
+			Logger.Error(err)
 		} else {
 
 		}
-		/*if err := syscall.Kill(MpvPid, syscall.SIGKILL); err == nil {
-		} else {
-			log.Println(err)
-		}*/
 		MpvPid = -1
 	}
 }

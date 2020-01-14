@@ -5,6 +5,11 @@ import (
 )
 
 func showPageSync() {
+
+	Logger.Error("本地模式测试中...")
+	showPageHome()
+	return
+
 	pageSyncSelectItems := []string{
 		SyncCmdSyncFollowing,
 		SyncCmdSyncLive,
@@ -13,14 +18,6 @@ func showPageSync() {
 		CMDExit,
 	}
 
-	/*	pageSync := promptui.Select{
-			Label: "sync followings or live or both from cloud",
-			Items: pageSyncSelectItems,
-			Size:  len(pageSyncSelectItems),
-		}
-
-		_, nextRoute, _ := pageSync.Run()
-	*/
 	nextRoute := promptSelect(
 		"sync followings or live or both from cloud",
 		pageSyncSelectItems,
@@ -42,6 +39,6 @@ func showPageSync() {
 	case CMDExit:
 		exitClear()
 	default:
-		Logger.Fatal("unknown route:", nextRoute)
+		//Logger.Fatal("unknown route:", nextRoute)
 	}
 }

@@ -22,13 +22,6 @@ func pageAccountSelect() {
 		pageAccountSelectItems[i] = fmt.Sprint(i, ". ", account.NikeName, " ", account.Uid)
 	}
 
-	/*	prompt := promptui.Select{
-			Label: "select account to activate",
-			Items: pageAccountSelectItems,
-		}
-
-		_, selectedUserStr, _ := prompt.Run()
-	*/
 	selectedUserStr := promptSelect(
 		"select account to activate",
 		pageAccountSelectItems,
@@ -53,20 +46,12 @@ func pageAccountCMDAdd() {
 		}
 		return nil
 	}
-	/*
-		inputLoginUserName := promptui.Prompt{
-			Label:    "phone/email",
-			Validate: validate,
-		}
-		inputPassword := promptui.Prompt{
-			Label: "password",
-			Mask:  '*',
-		}
-		loginUserName, _ := inputLoginUserName.Run()
-		password, _ := inputPassword.Run()
-	*/
 
-	loginUserName := promptInput("phone/email", survey.WithValidator(validate))
+	loginUserName := promptInput(&survey.Input{
+		Message: "phone/email",
+		Default: "",
+		Help:    "",
+	}, survey.WithValidator(validate))
 	password := promptPassword("password")
 
 	loginDone := make(chan bool)
@@ -78,9 +63,9 @@ func pageAccountCMDAdd() {
 		fmt.Print("\n")
 		loginDone <- true
 
-		fmt.Println("Your token is:", u.Data.TokenInfo.AccessToken)
-		fmt.Println("Your SESSDATA is:", u.Data.CookieInfo.CookiesMap["SESSDATA"])
-		fmt.Println("Expire Date:", time.Unix(u.Data.CookieInfo.Cookies[0].Expires, 0))
+		Logger.Info("Your token is:", u.Data.TokenInfo.AccessToken)
+		Logger.Info("Your SESSDATA is:", u.Data.CookieInfo.CookiesMap["SESSDATA"])
+		Logger.Info("Expire Date:", time.Unix(u.Data.CookieInfo.Cookies[0].Expires, 0))
 
 		if _, err := db.Exec(`
 			REPLACE INTO Account(uid,nikeName,loginUserName,accessToken,expire,SESSDATA,sid,DedeUserID__ckMd5,lastUsedTimestamp,blocked) 
@@ -91,7 +76,7 @@ func pageAccountCMDAdd() {
 			u.Data.CookieInfo.CookiesMap["SESSDATA"], u.Data.CookieInfo.CookiesMap["sid"], u.Data.CookieInfo.CookiesMap["DedeUserID__ckMd5"],
 			time.Now().Unix(), 0,
 		); err != nil {
-			Logger.Error(err)
+			Logger.Error("update dab failed: ", err)
 		}
 	} else if u != nil {
 		loginDone <- false
@@ -99,9 +84,9 @@ func pageAccountCMDAdd() {
 		showPageAccount()
 	} else {
 		loginDone <- false
-		Logger.Error("unknown error")
+		Logger.Error("unknown error happened!")
 	}
-
+	Logger.Info("remember to select the account")
 	showPageHome()
 }
 

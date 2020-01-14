@@ -23,7 +23,7 @@ type Account struct {
 }
 
 type Following struct {
-	Uid      int64
+	Uid      int64 // local user id
 	Fid      int64
 	NikeName string // Fid
 	Blocked  int64

@@ -16,19 +16,6 @@ func showPageHome() {
 		CMDExit,
 	}
 
-	/*homePage := promptui.Select{
-		Label: promptui.Styler(promptui.FGRed)("hallo! " + AccountSelected.NikeName + ": " + fmt.Sprint(AccountSelected.Uid)),
-		Items: homePageSelectItems,
-		Size:  len(homePageSelectItems),
-	}
-
-	nextRoute := ""
-	err := errors.New("")
-
-	if _, nextRoute, err = homePage.Run(); err != nil {
-		Logger.Fatal(err)
-	}*/
-
 	nextRoute := promptSelect(
 		promptui.Styler(promptui.FGRed)("hallo! "+AccountSelected.NikeName+": "+fmt.Sprint(AccountSelected.Uid)),
 		homePageSelectItems,
@@ -49,6 +36,6 @@ func showPageHome() {
 		exitClear()
 
 	default:
-		Logger.Fatal("unknown route:", nextRoute)
+		//Logger.Fatal("unknown route:", nextRoute)
 	}
 }

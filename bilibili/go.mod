@@ -3,19 +3,18 @@ module github.com/luoyayu/goutils/bilibili
 go 1.13
 
 require (
-	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
-	github.com/beevik/ntp v0.2.0 // indirect
-	github.com/go-ole/go-ole v1.2.4 // indirect
+	github.com/BurntSushi/toml v0.3.1
 	github.com/gorilla/websocket v1.4.1
 	github.com/luoyayu/goutils/enc v0.0.0-20200112053613-a6db8386b494
-	github.com/luoyayu/goutils/logger v0.0.0-20200112053613-a6db8386b494
+	github.com/luoyayu/goutils/net v0.0.0-20200112161235-0e590e510c00
 	github.com/manifoldco/promptui v0.7.0
-	github.com/mattn/go-sqlite3 v2.0.2+incompatible
-	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
-	github.com/pkg/errors v0.8.1
-	github.com/shirou/gopsutil v2.19.12+incompatible
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
-	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2
+)
+
+replace (
+	github.com/luoyayu/goutils/date => /Volumes/MacMisc/github/goutils/date
+	github.com/luoyayu/goutils/enc => /Volumes/MacMisc/github/goutils/enc
+	github.com/luoyayu/goutils/logger => /Volumes/MacMisc/github/goutils/logger
+	github.com/luoyayu/goutils/net => /Volumes/MacMisc/github/goutils/net
 )
