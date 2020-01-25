@@ -145,7 +145,8 @@ type GetRoomInfoByRoomIdRet struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 	Data    struct {
-		Info RoomInfo `json:"room_info"`
+		RoomInfo   RoomInfo   `json:"room_info"`
+		AnchorInfo AnchorInfo `json:"anchor_info"`
 	} `json:"data"`
 }
 
@@ -162,6 +163,14 @@ type RoomInfo struct {
 	ParentAreaName string `json:"parent_area_name"`
 	Keyframe       string `json:"keyframe"`
 	Online         int    `json:"online"`
+}
+
+type AnchorInfo struct {
+	BaseInfo *struct {
+		UName  string `json:"uname"`
+		Face   string `json:"face"`
+		Gender string `json:"gender"`
+	} `json:"base_info"`
 }
 
 func GetRoomInfoByRoomId(roomId interface{}) (rett *GetRoomInfoByRoomIdRet, err error) {
