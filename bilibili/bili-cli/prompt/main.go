@@ -1,13 +1,20 @@
 package main
 
 import (
-	biliAPI "github.com/luoyayu/goutils/bilibili"
-	"github.com/luoyayu/goutils/logger"
+	"github.com/AlecAivazis/survey/v2"
 )
 
-func main() {
+func PromptSelect(question string, options []string, opt ...survey.AskOpt) (ret string) {
+	if err := survey.AskOne(&survey.Select{
+		Message: question,
+		Options: options,
+	}, &ret, opt...); err != nil {
+		//Logger.Error(err)
+	}
+	//Logger.Info("your select: %q\n", ret)
+	return
+}
 
-	r, _ := biliAPI.RoomInit("")
-	logger.NewDebugLogger().Info(r.Data.LiveStatus)
-	logger.NewDebugLogger().Info(r.Data)
+func main() {
+	PromptSelect("test", []string{"1. 123\n  456\n  789","2. aaa\n  bb\n  ccc"})
 }

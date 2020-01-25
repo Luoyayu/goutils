@@ -19,7 +19,7 @@ type Account struct {
 	DedeUserID__ckMd5 string
 	LastUsedTimestamp int64
 	Blocked           int64
-	Info              *biliAPI.UserInfoDataStruct
+	Info              *biliAPI.UserInfoData
 }
 
 type Following struct {
@@ -27,6 +27,7 @@ type Following struct {
 	Fid      int64
 	NikeName string // Fid
 	Blocked  int64
+	Face string
 }
 
 type Live struct {

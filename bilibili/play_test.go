@@ -6,7 +6,7 @@ import (
 )
 
 func TestGetPlayFromCDN(t *testing.T) {
-	ret, err := GetPlayUrl(36607048, 64249025, 80)
+	ret, err := GetPlayUrl(0, 0, 80, "")
 	if err != nil {
 		panic(err)
 	}
@@ -14,5 +14,5 @@ func TestGetPlayFromCDN(t *testing.T) {
 }
 
 func TestDownloadVideo(t *testing.T) {
-	DownloadVideo(83199184, 1, 0)
+	DownloadVideo(0, 1, 0, "", -1)
 }

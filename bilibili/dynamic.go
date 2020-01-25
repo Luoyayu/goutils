@@ -40,7 +40,7 @@ func GetLatestDynamicSpaceHistory(hostId int64) (*CardStruct, error) {
 }
 
 // 20 entities/page
-func GetDynamicSpaceHistory(hostId int64, offsetDynamicId int64, latest bool) (data *DynamicRetStruct, err error) {
+func GetDynamicSpaceHistory(hostId interface{}, offsetDynamicId int64, latest bool) (data *DynamicRetStruct, err error) {
 	params := map[string]interface{}{
 		//"actionKey": "appkey",
 		//"appkey":    Config.AppKey,
@@ -73,6 +73,7 @@ func GetDynamicSpaceHistory(hostId int64, offsetDynamicId int64, latest bool) (d
 			for _, card := range ret.Data.Cards {
 				cardBytes := []byte(card.CardString)
 				card.CartType = card.Desc.Type
+
 				switch card.CartType {
 				case 1: // 图文 + 引用< 动态, 投稿, 专栏, 房间, 投票 >
 					card.CardContent.T1 = &Type1{}
@@ -84,7 +85,7 @@ func GetDynamicSpaceHistory(hostId int64, offsetDynamicId int64, latest bool) (d
 					switch card.CardContent.T1.OriginType {
 					case 2: // 图文
 						err = json.Unmarshal(originBytes, &card.CardContent.T1.OriginContent.T2)
-					case 4: // 活动
+					case 4: // 图文
 						err = json.Unmarshal(originBytes, &card.CardContent.T1.OriginContent.T4)
 					case 8: // 投稿
 						err = json.Unmarshal(originBytes, &card.CardContent.T1.OriginContent.T8)
@@ -112,7 +113,7 @@ func GetDynamicSpaceHistory(hostId int64, offsetDynamicId int64, latest bool) (d
 
 				case 2: // 图文
 					err = json.Unmarshal(cardBytes, &card.CardContent.T2)
-				case 4: // 活动
+				case 4: // 图文
 					err = json.Unmarshal(cardBytes, &card.CardContent.T4)
 				case 8: // 投稿
 					err = json.Unmarshal(cardBytes, &card.CardContent.T8)
@@ -195,11 +196,11 @@ type CardStruct struct {
 
 type CardContentInterface struct {
 	T1    *Type1    // 图文 + 引用<动态, 投稿, 专栏, 房间, 投票>
-	T2    *Type2    // 图文
-	T4    *Type4    // 活动 no origin string in card
+	T2    *Type2    // 图文 有图片
+	T4    *Type4    // 图文 无图片 no origin string in card
 	T8    *Type8    // 投稿
 	T16   *Type16   // 小视频
-	T32   *Type32   // FIXME: UNKNOWN TYPE
+	T32   *Type32   // 番剧更新
 	T64   *Type64   // 专栏
 	T256  *Type256  // 创作
 	T512  *Type512  // 番剧
@@ -233,7 +234,7 @@ type Type1 struct {
 	OriginContent *CardContentInterface // 引用内容
 }
 
-// 图文
+// 图文 有图片
 type Type2 struct {
 	Item *struct {
 		Id          int64  `json:"id"`
@@ -253,7 +254,7 @@ type Type2 struct {
 	} `json:"item"`
 }
 
-// 活动
+// 图文 无图片
 type Type4 struct {
 	Item *struct {
 		RpId      int64  `json:"rp_id"`
@@ -481,9 +482,9 @@ func DynamicTypeId2String(typeId int) string {
 	case 1:
 		return "图文&引用"
 	case 2:
-		return "图文"
+		return "图文&图片"
 	case 4:
-		return "活动"
+		return "图文&无图片"
 	case 8:
 		return "投稿"
 	case 16:

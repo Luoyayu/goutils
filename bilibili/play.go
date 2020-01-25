@@ -1,12 +1,10 @@
 package biliAPI
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"sync"
 )
@@ -52,17 +50,16 @@ type GetCidByAidRetData struct {
 }
 
 // parts
-func GetCidByAid(aid interface{}) (*GetCidByAidRet, error) {
-	req, _ := http.NewRequest("GET", "https://api.bilibili.com/x/web-interface/view?aid="+fmt.Sprint(aid), nil)
+func GetCidByAid(aid interface{}) (rett *GetCidByAidRet, err error) {
+	req := &http.Request{}
 	req.Header.Add("Host", "api.bilibili.com")
-	if resp, err := (&http.Client{}).Do(req); err == nil {
-		ret := &GetCidByAidRet{}
-		err := json.NewDecoder(resp.Body).Decode(&ret)
-		defer resp.Body.Close()
-		return ret, err
-	} else {
-		return nil, err
+
+	if ret, err := GetWithReq(Config.API.GetCIdsByAId, map[string]interface{}{
+		"aid": aid,
+	}, req, &GetCidByAidRet{}); err == nil {
+		rett = ret.(*GetCidByAidRet)
 	}
+	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,12 +81,7 @@ type GetPlayUrlRet struct {
 	} `json:"data"`
 }
 
-func GetPlayUrl(aid, cid, qn interface{}, SESSDATA string) (*GetPlayUrlRet, error) {
-	params := map[string]interface{}{
-		"avid": aid,
-		"cid":  cid,
-		"qn":   qn,
-	}
+func GetPlayUrl(aid, cid, qn interface{}, SESSDATA string) (rett *GetPlayUrlRet, err error) {
 	/*
 		116: 高清1080P60 (需要大会员)
 		112: 高清1080P+ (hdflv2) (需要大会员)
@@ -101,30 +93,22 @@ func GetPlayUrl(aid, cid, qn interface{}, SESSDATA string) (*GetPlayUrlRet, erro
 		0:  游客模式(32)
 	*/
 
-	l := url.Values{}
-	c := &http.Client{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
-
-	r, _ := http.NewRequest("GET",
+	req, _ := http.NewRequest("GET",
 		"https://api.bilibili.com/x/player/playurl"+"?"+l.Encode(), nil)
-	if r != nil {
-		if SESSDATA != "" {
-			r.Header.Set("Cookie", "SESSDATA="+SESSDATA)
-		}
-		r.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36")
-		r.Header.Set("Host", "api.bilibili.com")
+	if SESSDATA != "" {
+		req.Header.Set("Cookie", "SESSDATA="+SESSDATA)
 	}
+	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36")
+	req.Header.Set("Host", "api.bilibili.com")
 
-	if resp, err := c.Do(r); err == nil {
-		ret := &GetPlayUrlRet{}
-		err := json.NewDecoder(resp.Body).Decode(&ret)
-		defer resp.Body.Close()
-		return ret, err
-	} else {
-		return nil, err
+	if ret, err := GetWithReq(Config.API.GetPlayUrl, map[string]interface{}{
+		"avid": aid,
+		"cid":  cid,
+		"qn":   qn,
+	}, req, &GetPlayUrlRet{}); err == nil {
+		rett = ret.(*GetPlayUrlRet)
 	}
+	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

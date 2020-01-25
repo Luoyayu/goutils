@@ -15,7 +15,7 @@ func showPageAccount() {
 		CMDExit,
 	}
 
-	nextPage := promptSelect(
+	nextPage := PromptSelect(
 		"Account: "+promptui.Styler(promptui.FGRed)(AccountSelected.NikeName)+" - "+promptui.Styler(promptui.FGRed)(AccountSelected.Uid),
 		accountPageSelectedItems,
 	)

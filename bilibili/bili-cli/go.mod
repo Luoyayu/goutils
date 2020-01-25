@@ -15,6 +15,7 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/shirou/gopsutil v2.19.12+incompatible
+	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/sys v0.0.0-20191224085550-c709ea063b76 // indirect
 	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2
 )

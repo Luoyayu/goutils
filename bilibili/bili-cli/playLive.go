@@ -66,24 +66,19 @@ func playLive(ctx context.Context, cid interface{}, params map[string]int, costu
 				playArgs = append(playArgs, "--no-video")
 			}
 
+			playArgs = append(playArgs, "--hwdec=auto-safe")
+
 			if costumedMpvArgs != "" {
-				playArgs = append(playArgs, costumedMpvArgs, streamUrl)
-			} else {
-				playArgs = append(playArgs, streamUrl)
+				playArgs = append(playArgs, strings.Split(costumedMpvArgs, " ")...)
 			}
 
+			playArgs = append(playArgs, streamUrl)
 			//Logger.Info("mpv:", playArgs)
 
 			cmd := exec.Command(mpv, playArgs...)
-			//cmd := exec.Cmd{
-			//	Args: playArgs,
-			//}
-
 			out := &bytes.Buffer{}
-
 			cmd.Stdout = out
 
-			// stop mpv if exists
 			stopMpvSafely()
 
 			err = cmd.Start()
@@ -126,5 +121,4 @@ func playLive(ctx context.Context, cid interface{}, params map[string]int, costu
 			return
 		}
 	}
-	//Logger.Info("play Live END!")
 }

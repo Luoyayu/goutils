@@ -18,7 +18,7 @@ func showPageLive() {
 		CMDExit,
 	}
 
-	nextRoute := promptSelect(
+	nextRoute := PromptSelect(
 		AccountSelected.NikeName+": "+fmt.Sprint(AccountSelected.Uid),
 		options,
 		survey.WithPageSize(len(options)),

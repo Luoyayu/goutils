@@ -16,7 +16,7 @@ func showPageHome() {
 		CMDExit,
 	}
 
-	nextRoute := promptSelect(
+	nextRoute := PromptSelect(
 		promptui.Styler(promptui.FGRed)("hallo! "+AccountSelected.NikeName+": "+fmt.Sprint(AccountSelected.Uid)),
 		homePageSelectItems,
 	)

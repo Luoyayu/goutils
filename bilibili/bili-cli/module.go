@@ -47,9 +47,12 @@ var (
 var (
 	FollowingRouteId = "@" + Home2Following
 
-	FollowingCmdSelect = CMDSelect +"Video"+ FollowingRouteId
+	FollowingCmdSelect        = CMDSelect + FollowingRouteId
+	FollowingCmdSelectVideo   = "video" + FollowingRouteId
+	FollowingCmdSelectDynamic = "dynamic" + FollowingRouteId
+
 	FollowingCmdBlock  = CMDBlock + FollowingRouteId + unImplemented
-	FollowingCmdAdd    = CMDAdd + FollowingRouteId
+	FollowingCmdPlay   = CMDPlay + FollowingRouteId
 	FollowingCmdEdit   = CMDEdit + FollowingRouteId + unImplemented
 	FollowingCmdDelete = CMDDelete + FollowingRouteId + unImplemented
 )

@@ -1,42 +1,8 @@
 package biliAPI
 
-import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// order: [(desc), ]
-// 50 entities / page
-func GetRelationFollowings(vmid int64, pn int, order string) (*relationFollowingsRetStruct, error) {
-	if order == "" {
-		order = "desc"
-	}
-	params := map[string]interface{}{
-		"vmid":  vmid,
-		"order": order,
-		"pn":    pn,
-		"ps":    50,
-	}
-
-	var err error
-	l := url.Values{}
-	resp := &http.Response{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
-	if resp, err = http.Get(Config.API.RelationFollowings + "?" + l.Encode()); err == nil {
-		b, _ := ioutil.ReadAll(resp.Body)
-		ret := &relationFollowingsRetStruct{}
-		err = json.Unmarshal(b, &ret)
-		return ret, err
-	}
-	return nil, err
-}
-
-type relationFollowingsRetStruct struct {
+type RelationFollowingsRet struct {
 	Code    int                           `json:"code"`
 	Message string                        `json:"message"`
 	Data    *relationFollowingsDataStruct `json:"data"`
@@ -56,42 +22,46 @@ type relationFollowingsUserStruct struct {
 	OfficialVerify *officialVerifyStruct `json:"official_verify"`
 }
 
+// order: [(desc), ]
+func GetRelationFollowings(vmid int64, pn int, order string) (rett *RelationFollowingsRet, err error) {
+	if order == "" {
+		order = "desc"
+	}
+
+	if ret, err := GetDefault(Config.API.RelationFollowings, map[string]interface{}{
+		"vmid":  vmid,
+		"order": order,
+		"pn":    pn,
+		"ps":    50,
+	}, &RelationFollowingsRet{}); err == nil {
+		rett = ret.(*RelationFollowingsRet)
+	}
+	return
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+type RelationStatRet struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    *struct {
+		Mid       int64 `json:"mid"`
+		Following int   `json:"following"`
+		Whisper   int   `json:"whisper"`
+		Black     int   `json:"black"`
+		Follower  int   `json:"follower"`
+	} `json:"data"`
+}
+
 // following total number
-func GetRelationStat(vmid int64) (*RelationStatRetStruct, error) {
-	params := map[string]interface{}{
+func GetRelationStat(vmid int64) (rett *RelationStatRet, err error) {
+	if ret, err := GetDefault(Config.API.RelationStat, map[string]interface{}{
 		"vmid":  vmid,
 		"jsonp": "jsonp",
+	}, &RelationStatRet{}); err == nil {
+		rett = ret.(*RelationStatRet)
 	}
-	l := url.Values{}
-	var err error
-	resp := &http.Response{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
-	if resp, err = http.Get(Config.API.RelationStat + "?" + l.Encode()); err == nil {
-		b, _ := ioutil.ReadAll(resp.Body)
-		ret := &RelationStatRetStruct{}
-		err = json.Unmarshal(b, &ret)
-		return ret, err
-	}
-	return nil, err
-
-}
-
-type RelationStatRetStruct struct {
-	Code    int                     `json:"code"`
-	Message string                  `json:"message"`
-	Data    *RelationStatDataStruct `json:"data"`
-}
-
-type RelationStatDataStruct struct {
-	Mid       int64 `json:"mid"`
-	Following int   `json:"following"`
-	Whisper   int   `json:"whisper"`
-	Black     int   `json:"black"`
-	Follower  int   `json:"follower"`
+	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

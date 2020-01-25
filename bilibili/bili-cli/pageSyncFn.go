@@ -36,6 +36,7 @@ func pageSyncCmdSyncFollowing(hintCoverFollowing bool) []*Following {
 						Uid:      AccountSelected.Uid,
 						Fid:      user.Mid,
 						NikeName: user.Uname,
+						Face:     user.Face,
 						Blocked:  0,
 					}
 				}
@@ -53,7 +54,7 @@ func pageSyncCmdSyncFollowing(hintCoverFollowing bool) []*Following {
 		}
 		yn, _ := isCoverPage.Run()*/
 
-		yn := promptConfirm("cover local following data")
+		yn := PromptConfirm("cover local following data")
 
 		if yn == true {
 			FollowingInDB = followings
@@ -131,7 +132,7 @@ func pageSyncCmdSyncLive(hintCoverLive, hintCoverFollowing, getAll bool) []*Live
 			yn, _ := isCoverPage.Run()
 		*/
 
-		yn := promptConfirm("cover local live data")
+		yn := PromptConfirm("cover local live data")
 
 		if yn == true {
 			LiveInDB = live

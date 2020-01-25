@@ -22,7 +22,7 @@ func pageAccountSelect() {
 		pageAccountSelectItems[i] = fmt.Sprint(i, ". ", account.NikeName, " ", account.Uid)
 	}
 
-	selectedUserStr := promptSelect(
+	selectedUserStr := PromptSelect(
 		"select account to activate",
 		pageAccountSelectItems,
 
@@ -47,12 +47,12 @@ func pageAccountCMDAdd() {
 		return nil
 	}
 
-	loginUserName := promptInput(&survey.Input{
+	loginUserName := PromptInput(&survey.Input{
 		Message: "phone/email",
 		Default: "",
 		Help:    "",
 	}, survey.WithValidator(validate))
-	password := promptPassword("password")
+	password := PromptPassword("password")
 
 	loginDone := make(chan bool)
 	go printLoading(loginDone, 0)

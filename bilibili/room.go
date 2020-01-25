@@ -1,11 +1,8 @@
 package biliAPI
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"net/url"
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,23 +20,11 @@ type Room struct {
 	} `json:"data"`
 }
 
-func RoomInit(roomID interface{}) (*Room, error) {
-	params := map[string]interface{}{
-		"id": roomID,
+func RoomInit(roomID interface{}) (rett *Room, err error) {
+	if ret, err := GetDefault(Config.API.RoomInit, map[string]interface{}{"id": roomID}, &Room{}); err == nil {
+		rett = ret.(*Room)
 	}
-	l := url.Values{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
-
-	if resp, err := http.Get(Config.API.RoomInit + "?" + l.Encode()); err == nil {
-		var ret = &Room{}
-		err = json.NewDecoder(resp.Body).Decode(&ret)
-		defer resp.Body.Close()
-		return ret, nil
-	} else {
-		return nil, err
-	}
+	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,24 +39,13 @@ type RoomPlayUrl struct {
 	} `json:"data"`
 }
 
-func GetRoomPlayUrl(roomID interface{}) (*RoomPlayUrl, error) {
-	params := map[string]interface{}{
+func GetRoomPlayUrl(roomID interface{}) (rett *RoomPlayUrl, err error) {
+	if ret, err := GetDefault(Config.API.RoomPlayUrl, map[string]interface{}{
 		"cid": roomID,
+	}, &RoomPlayUrl{}); err == nil {
+		rett = ret.(*RoomPlayUrl)
 	}
-
-	l := url.Values{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
-
-	if resp, err := http.Get(Config.API.RoomPlayUrl + "?" + l.Encode()); err == nil {
-		var ret = &RoomPlayUrl{}
-		err = json.NewDecoder(resp.Body).Decode(&ret)
-		defer resp.Body.Close()
-		return ret, nil
-	} else {
-		return nil, err
-	}
+	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,36 +63,13 @@ type RoomNews struct {
 	} `json:"data"`*/
 }
 
-func GetRoomNews(roomId interface{}, uid interface{}) (*RoomNews, error) {
-	if fmt.Sprint(roomId) == "" && fmt.Sprint(uid) == "" {
-		log.Fatalln("roomId and uid all null!")
+func GetRoomNews(roomId interface{}, uid interface{}) (rett *RoomNews, err error) {
+	if ret, err := GetDefault(Config.API.RoomNewsGet, map[string]interface{}{
+		"roomid": roomId, "uid": uid,
+	}, &RoomNews{}); err == nil {
+		rett = ret.(*RoomNews)
 	}
-	params := map[string]interface{}{
-		"roomid": roomId,
-		"uid":    uid,
-	}
-	l := url.Values{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
-
-	if resp, err := http.Get(Config.API.RoomNewsGet + "?" + l.Encode()); err == nil {
-		var ret = &RoomNews{}
-		err = json.NewDecoder(resp.Body).Decode(&ret)
-		if err != nil {
-			return nil, err
-		}
-
-		//log.Printf("%#v\n", ret.Data)
-
-		if ret.Code == 0 {
-			//log.Printf("%q\n", ret.Data.(map[string]interface{})["roomid"])
-		}
-		defer resp.Body.Close()
-		return ret, nil
-	} else {
-		return nil, err
-	}
+	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,95 +81,94 @@ type LiveMyFollowingRet struct {
 }
 
 type LiveMyFollowingData struct {
-	Title     string                   `json:"title"`
-	PageSize  int                      `json:"pageSize"`
-	TotalPage int                      `json:"totalPage"`
-	List      []*LiveMyFollowingStruct `json:"list"`
-}
-
-type LiveMyFollowingStruct struct {
-	RoomId     int64  `json:"roomid"`
-	Uid        int64  `json:"uid"`
-	UName      string `json:"uname"`
-	Title      string `json:"title"`
-	Face       string `json:"face"`
-	LiveStatus int    `json:"live_status"`
+	Title     string `json:"title"`
+	PageSize  int    `json:"pageSize"`
+	TotalPage int    `json:"totalPage"`
+	List      []*struct {
+		RoomId     int64  `json:"roomid"`
+		Uid        int64  `json:"uid"`
+		UName      string `json:"uname"`
+		Title      string `json:"title"`
+		Face       string `json:"face"`
+		LiveStatus int    `json:"live_status"`
+	} `json:"list"`
 }
 
 // 10 entities per page
-func GetLiveMyFollowing(uid int64, SESSDATA string, pn, ps int) (ret *LiveMyFollowingRet, err error) {
+func GetLiveMyFollowing(uid int64, SESSDATA string, pn, ps int) (rett *LiveMyFollowingRet, err error) {
 	if ps <= 0 {
 		ps = 20
 	}
-	params := map[string]interface{}{
-		"page":      pn,
-		"page_size": ps,
-	}
-	l := url.Values{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
 
-	req, _ := http.NewRequest("GET", Config.API.LiveMyFollowing+"?"+l.Encode(), nil)
-	req.Header.Set("Cookie",
-		fmt.Sprint("INTVER=1;DedeUserID=", uid, ";SESSDATA=", SESSDATA, ";"))
+	req := &http.Request{}
+	req.Header.Set("Cookie", fmt.Sprintf("INTVER=1;DedeUserID=%v;SESSDATA=%v", uid, SESSDATA))
 
-	var resp *http.Response
-	if resp, err = (&http.Client{}).Do(req); err == nil {
-		defer resp.Body.Close()
-		ret = &LiveMyFollowingRet{}
-		err = json.NewDecoder(resp.Body).Decode(&ret)
-		if err != nil {
-			return
-		}
+	ret, err := GetWithReq(Config.API.LiveMyFollowing, map[string]interface{}{"page": pn, "page_size": ps}, req, &LiveMyFollowingRet{})
+	if err == nil {
+		rett = ret.(*LiveMyFollowingRet)
 	}
 	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 type LiveUserRecommendRet struct {
-	Code    int                  `json:"code"`    // 0 / 404
+	Code int `json:"code"` // 0 / 404
 	//Msg     string               `json:"msg"`     // always "ok"
 	//Message string               `json:"message"` // always "ok"
-	Data    []*LiveUserRecommend `json:"data"`
-}
-
-type LiveUserRecommend struct {
-	Face        string `json:"face"`
-	Link        string `json:"link"`
-	Online      int    `json:"online"`
-	RoomId      int64  `json:""`
-	SystemCover string `json:"system_cover"`
-	Title       string `json:"title"`
-	Uid         int64  `json:"uid"`
-	UName       string `json:"uname"`
-	UserCover   string `json:"user_cover"`
+	Data []*struct {
+		Face        string `json:"face"`
+		Link        string `json:"link"`
+		Online      int    `json:"online"`
+		RoomId      int64  `json:""`
+		SystemCover string `json:"system_cover"`
+		Title       string `json:"title"`
+		Uid         int64  `json:"uid"`
+		UName       string `json:"uname"`
+		UserCover   string `json:"user_cover"`
+	} `json:"data"`
 }
 
 // ps = 30
-func GetLiveUserRecommend(uid interface{}, SESSDATA interface{}, pn int) (ret *LiveUserRecommendRet, err error) { // need login
-	params := map[string]interface{}{
-		"page": pn,
-	}
-	l := url.Values{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
+func GetLiveUserRecommend(uid interface{}, SESSDATA interface{}, pn int) (rett *LiveUserRecommendRet, err error) { // need login
+	req := &http.Request{}
+	req.Header.Set("Cookie", fmt.Sprintf("INTVER=1;DedeUserID=%v;SESSDATA=%v", uid, SESSDATA))
 
-	req, _ := http.NewRequest("GET", Config.API.LiveGetUserRecommend+"?"+l.Encode(), nil)
-	req.Header.Set("Cookie",
-		fmt.Sprint("INTVER=1;DedeUserID=", uid, ";SESSDATA=", SESSDATA, ";"))
+	ret, err := GetWithReq(Config.API.LiveGetUserRecommend, map[string]interface{}{"page": pn}, req, &LiveUserRecommendRet{})
+	if err == nil {
+		rett = ret.(*LiveUserRecommendRet)
+	}
+	return
+}
 
-	var resp *http.Response
-	if resp, err = (&http.Client{}).Do(req); err == nil {
-		defer resp.Body.Close()
-		ret = &LiveUserRecommendRet{}
-		//b, _ := ioutil.ReadAll(resp.Body)
-		//log.Println(string(b))
-		err = json.NewDecoder(resp.Body).Decode(&ret)
-		if err != nil {
-			return
-		}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+type GetRoomInfoByRoomIdRet struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    struct {
+		Info RoomInfo `json:"room_info"`
+	} `json:"data"`
+}
+
+type RoomInfo struct {
+	Uid            int64  `json:"uid"`
+	RoomId         int64  `json:"room_id"`
+	ShortId        int    `json:"short_id"`
+	Title          string `json:"title"`
+	Cover          string `json:"cover"`
+	Tags           string `json:"tags"`
+	LiveStatus     int    `json:"live_status"`
+	LiveStartTime  int64  `json:"live_start_time"`
+	AreaName       string `json:"area_name"`
+	ParentAreaName string `json:"parent_area_name"`
+	Keyframe       string `json:"keyframe"`
+	Online         int    `json:"online"`
+}
+
+func GetRoomInfoByRoomId(roomId interface{}) (rett *GetRoomInfoByRoomIdRet, err error) {
+	if ret, err := GetDefault(Config.API.RoomGetInfoByRoomID, map[string]interface{}{
+		"room_id": roomId,
+	}, &GetRoomInfoByRoomIdRet{}); err == nil {
+		rett = ret.(*GetRoomInfoByRoomIdRet)
 	}
 	return
 }

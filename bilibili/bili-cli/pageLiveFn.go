@@ -57,7 +57,7 @@ func pageLiveSelect(updateAccountNowLive bool) {
 		return
 	}
 
-	result := strings.Split(promptSelect("online live", liveSelectableItems, survey.WithPageSize(10)), " ")
+	result := strings.Split(PromptSelect("online live", liveSelectableItems, survey.WithPageSize(10)), " ")
 
 	if len(result) > 0 && len(result[0]) > 3 {
 		ridStr := result[0][1 : len(result[0])-1]
@@ -118,7 +118,7 @@ func pageLivePlaySelected(cid interface{}) {
 		CMDExit,
 	}
 
-	playCmd := promptSelect("play live for "+uName, playLiveSelectedItems, survey.WithPageSize(len(playLiveSelectedItems)))
+	playCmd := PromptSelect("play live for "+uName, playLiveSelectedItems, survey.WithPageSize(len(playLiveSelectedItems)))
 	//Logger.Info("playCmd: ", playCmd)
 
 	if strings.HasPrefix(playCmd, "play: ") == false {
@@ -146,7 +146,7 @@ func pageLivePlaySelected(cid interface{}) {
 		mpvOptions := ""
 
 		if strings.Contains(playCmd, "mpv") {
-			mpvOptions = promptInput(&survey.Input{
+			mpvOptions = PromptInput(&survey.Input{
 				Message: "mpv and danmaku options",
 				Default: "--danmaku=yes",
 				Help:    "mpv manual: mpv.io/manual/stable \n recommend options:\n--ontop: keep player on top\n",
@@ -174,7 +174,7 @@ func pageLivePlaySelected(cid interface{}) {
 }
 
 func pageLivePlayControl(cid interface{}, playCmd string, cancel context.CancelFunc) {
-	controlCallback := promptSelect(
+	controlCallback := PromptSelect(
 		"control live with "+playCmd,
 		[]string{
 			CMDBack,
@@ -198,7 +198,7 @@ func pageLivePlayControl(cid interface{}, playCmd string, cancel context.CancelF
 }
 
 func pageLiveAdd() {
-	input := promptInput(&survey.Input{
+	input := PromptInput(&survey.Input{
 		Message: "rid:XXX / uid:XXX",
 		Default: "",
 		Help:    "add to play，input format must be `rid:`roomID or `uid:`up's uid",

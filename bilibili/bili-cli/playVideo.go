@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
-	"runtime"
 	"strings"
 )
 
@@ -23,11 +22,7 @@ func playVideo(ctx context.Context, aid interface{}, durl string, title string) 
 	var playArgs []string
 	// HACK for osx
 
-	if runtime.GOOS == "darwin" {
-		playArgs = []string{header, "--force-media-title=" + title, "--hwdec=videotoolbox", durl}
-	} else {
-		playArgs = []string{header, "--force-media-title=" + title, durl}
-	}
+	playArgs = []string{header, "--force-media-title=" + title, "--hwdec=auto-safe" + durl}
 
 	cmd := exec.Command(mpv, playArgs...)
 

@@ -1,60 +1,26 @@
 package biliAPI
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"net/url"
+	"errors"
 	"time"
 )
 
 // search use: <"keyword", "bili_user", "">
-func GetSearchUser(keyword string, pageId int) (*searchRetStruct, error) {
+func GetSearchUser(keyword string, pageId int) (*SearchRet, error) {
 	return GetSearch(keyword, "bili_user", "", pageId)
 }
 
-func GetSearch(keyword, searchType, order string, pageId int) (*searchRetStruct, error) {
-	params := map[string]interface{}{
-		"context":       "",
-		"search_type":   searchType,
-		"page":          pageId,
-		"order":         order,
-		"keyword":       keyword,
-		"category_id":   "",
-		"user_type":     "",
-		"order_sort":    "",
-		"changing":      "mid",
-		"highlight":     0,
-		"single_column": 0,
-		"jsonp":         "jsonp",
-	}
-
-	l := url.Values{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
-	resp := &http.Response{}
-	var err error
-	if resp, err = http.Get(Config.API.SearchWeb + "?" + l.Encode()); err == nil {
-		ret := &searchRetStruct{}
-		err = json.NewDecoder(resp.Body).Decode(&ret)
-		defer resp.Body.Close()
-		return ret, err
-	}
-	return nil, err
+type SearchRet struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    *searchData `json:"data"`
 }
 
-type searchRetStruct struct {
-	Code    int               `json:"code"`
-	Message string            `json:"message"`
-	Data    *searchDataStruct `json:"data"`
+type searchData struct {
+	Result []*searchResult `json:"result"`
 }
 
-type searchDataStruct struct {
-	Result []*searchResultStruct `json:"result"`
-}
-
-type searchResultStruct struct {
+type searchResult struct {
 	Mid            int64                 `json:"mid"`
 	UName          string                `json:"uname"`
 	USign          string                `json:"usign"`
@@ -75,42 +41,37 @@ type officialVerifyStruct struct {
 	Desc string `json:"desc"`
 }
 
+func GetSearch(keyword, searchType, order string, pageId int) (rett *SearchRet, err error) {
+	if ret, err := GetDefault(Config.API.SearchWeb, map[string]interface{}{
+		"context":       "",
+		"search_type":   searchType,
+		"page":          pageId,
+		"order":         order,
+		"keyword":       keyword,
+		"category_id":   "",
+		"user_type":     "",
+		"order_sort":    "",
+		"changing":      "mid",
+		"highlight":     0,
+		"single_column": 0,
+		"jsonp":         "jsonp",
+	}, &SearchRet{}); err == nil {
+		rett = ret.(*SearchRet)
+	}
+	return
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// NOTICE: some term got no suggestion without error return!
-func GetSearchSuggest(term string) (*searchSuggestRetStruct, error) {
-	params := map[string]interface{}{
-		"func":         "suggest",
-		"suggest_type": "accurate",
-		"sub_type":     "tag",
-		"main_ver":     "v1",
-		"term":         term,
-		"_":            time.Now().UnixNano(),
-		//"highlight":    "", // uncomment for <em class="suggest_high_light">term</em>
-	}
-
-	var err error
-	l := url.Values{}
-	resp := &http.Response{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
-	if resp, err = http.Get(Config.API.SearchWebSuggest + "?" + l.Encode()); err == nil {
-		ret := &searchSuggestRetStruct{}
-		err = json.NewDecoder(resp.Body).Decode(&ret)
-		defer resp.Body.Close()
-		return ret, err
-	}
-	return nil, err
+type SearchSuggestRet struct {
+	Code   int                  `json:"code"`
+	Result *searchSuggestResult `json:"result"`
 }
 
-type searchSuggestRetStruct struct {
-	Code   int                        `json:"code"`
-	Result *searchSuggestResultStruct `json:"result"`
-}
-type searchSuggestResultStruct struct {
+type searchSuggestResult struct {
 	Tags []*searchSuggestResultTag `json:"tag"`
 }
+
 type searchSuggestResultTag struct {
 	Value string `json:"value"`
 	Ref   int    `json:"ref"`
@@ -118,7 +79,27 @@ type searchSuggestResultTag struct {
 	SpId  int    `json:"spid"`
 }
 
+// NOTICE: some term got no suggestion without error return!
+func GetSearchSuggest(term string) (rett *SearchSuggestRet, err error) {
+	if ret, err := GetDefault(Config.API.SearchWebSuggest, map[string]interface{}{
+		"func":         "suggest",
+		"suggest_type": "accurate",
+		"sub_type":     "tag",
+		"main_ver":     "v1",
+		"term":         term,
+		"_":            time.Now().UnixNano(),
+		//"highlight":    "", // uncomment for <em class="suggest_high_light">term</em>
+	}, &SearchSuggestRet{}); err == nil {
+		rett = ret.(*SearchSuggestRet)
+		if len(rett.Result.Tags) == 0 {
+			err = errors.New("no result")
+		}
+	}
+	return
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 type SpaceArcSearchRet struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
@@ -158,8 +139,8 @@ type SpaceArcSearchVList struct {
 	isUnionVideo int
 }
 
-func GetSpaceArcSearch(mid interface{}, ps, pn, tid int) (*SpaceArcSearchRet, error) {
-	params := map[string]interface{}{
+func GetSpaceArcSearch(mid interface{}, ps, pn, tid int) (rett *SpaceArcSearchRet, err error) {
+	if ret, err := GetDefault(Config.API.SpaceArcSearch, map[string]interface{}{
 		"mid":     mid,
 		"ps":      ps,
 		"pn":      pn,
@@ -167,19 +148,8 @@ func GetSpaceArcSearch(mid interface{}, ps, pn, tid int) (*SpaceArcSearchRet, er
 		"jsonp":   "jsonp",
 		"tid":     tid,
 		"keyword": "",
+	}, &SpaceArcSearchRet{}); err == nil {
+		rett = ret.(*SpaceArcSearchRet)
 	}
-
-	var err error
-	l := url.Values{}
-	resp := &http.Response{}
-	for k, v := range params {
-		l.Add(k, fmt.Sprint(v))
-	}
-
-	if resp, err = http.Get(Config.API.SpaceArcSearch + "?" + l.Encode()); err == nil {
-		ret := &SpaceArcSearchRet{}
-		err = json.NewDecoder(resp.Body).Decode(&ret)
-		return ret, err
-	}
-	return nil, err
+	return
 }

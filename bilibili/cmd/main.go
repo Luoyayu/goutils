@@ -41,12 +41,11 @@ func init() {
 }*/
 
 func main() {
-	ret := &biliAPI.DynamicRetStruct{}
-	var err error
 	curs := int64(0)
 	cnt := 0
 	for {
-		ret, err = biliAPI.GetDynamicSpaceHistory(9617619, curs, true)
+		ret, err := biliAPI.GetDynamicSpaceHistory(0, curs, false)
+
 		if err == nil {
 			if ret.Data.Attentions != nil {
 				fmt.Println("关注列表: ", ret.Data.Attentions.UIds)
@@ -76,9 +75,9 @@ func main() {
 							fmt.Println("第", i+1, "张: ", p.ImgSrc)
 						}
 					case 4:
-						fmt.Println("活动")
-						fmt.Println("> 引用活动内容: ", c.CardContent.T1.OriginContent.T4.Item.Content)
-						fmt.Println("活动发布时间: ", time.Unix(c.CardContent.T1.OriginContent.T4.Item.Timestamp, 0))
+						fmt.Println("图文")
+						fmt.Println("> 引用图文内容: ", c.CardContent.T1.OriginContent.T4.Item.Content)
+						fmt.Println("图文发布时间: ", time.Unix(c.CardContent.T1.OriginContent.T4.Item.Timestamp, 0))
 					case 8:
 						fmt.Println("投稿")
 						fmt.Println("> 引用账户 : ", c.CardContent.T1.OriginUser.Info.UName)
@@ -155,8 +154,8 @@ func main() {
 						fmt.Println("第", i+1, "张: ", p.ImgSrc)
 					}
 				case 4:
-					fmt.Println("活动内容: ", c.CardContent.T4.Item.Content)
-					fmt.Println("活动发布时间: ", time.Unix(c.CardContent.T4.Item.Timestamp, 0))
+					fmt.Println("图文内容: ", c.CardContent.T4.Item.Content)
+					fmt.Println("图文发布时间: ", time.Unix(c.CardContent.T4.Item.Timestamp, 0))
 				case 8: //投稿
 					fmt.Println("投稿ID: ", c.CardContent.T8.Aid)
 					fmt.Println("投稿标题: ", c.CardContent.T8.Title)
@@ -214,6 +213,8 @@ func main() {
 		}
 		curs = ret.Data.NextOffset
 		time.Sleep(time.Second * 2)
-		//break
+		if cnt >= 10 {
+			break
+		}
 	}
 }

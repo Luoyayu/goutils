@@ -5,21 +5,18 @@ import "github.com/AlecAivazis/survey/v2"
 func showPageFollowing() {
 	options := []string{
 		FollowingCmdSelect,
-		FollowingCmdAdd,
+		FollowingCmdPlay,
 		CMDHome,
 		CMDExit,
 	}
 
-	nextRoute := promptSelect("following", options,
-		survey.WithPageSize(len(options),
-		),
-	)
+	nextRoute := PromptSelect("following", options, survey.WithPageSize(len(options)))
 
 	switch nextRoute {
 	case FollowingCmdSelect:
-		pageFollowingCmdSelect()
-	case FollowingCmdAdd:
-		pageFollowingCmdAdd()
+		pageFollowingSelect()
+	case FollowingCmdPlay:
+		pageFollowingCmdPlay()
 	case CMDHome:
 		showPageHome()
 		return

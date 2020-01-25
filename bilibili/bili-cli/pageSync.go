@@ -18,7 +18,7 @@ func showPageSync() {
 		CMDExit,
 	}
 
-	nextRoute := promptSelect(
+	nextRoute := PromptSelect(
 		"sync followings or live or both from cloud",
 		pageSyncSelectItems,
 		survey.WithPageSize(len(pageSyncSelectItems)),

@@ -30,13 +30,17 @@ type ConfigBiliAPI struct {
 	SpaceArcSearch      string `toml:"space_arc_search"`
 	DynamicSpaceHistory string `toml:"dynamic_space_history"`
 
-	RoomInit    string `toml:"room_init"`
-	RoomPlayUrl string `toml:"room_play_url"`
-	RoomNewsGet string `toml:"room_news_get"`
+	RoomInit            string `toml:"room_init"`
+	RoomPlayUrl         string `toml:"room_play_url"`
+	RoomNewsGet         string `toml:"room_news_get"`
+	RoomGetInfoByRoomID string `toml:"room_get_info_by_roomID"`
 
 	LiveGetUserRecommend string `toml:"live_get_user_recommend"`
 	LiveMyFollowing      string `toml:"live_my_following"`
 	DanmakuHost          string `toml:"danmaku_host"`
+
+	GetCIdsByAId string `toml:"get_cids_by_aid"`
+	GetPlayUrl   string `toml:"get_play_url"`
 }
 
 // implement by caller ! Config
@@ -73,9 +77,13 @@ debug = false
     room_init = "https://api.live.bilibili.com/room/v1/Room/room_init"
     room_play_url = "https://api.live.bilibili.com/room/v1/Room/playUrl"
     room_news_get = "https://api.live.bilibili.com/room_ex/v1/RoomNews/get"
+	room_get_info_by_roomID = "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom"
 
     live_get_user_recommend = "https://api.live.bilibili.com/room/v1/room/get_user_recommend"
     live_my_following = "https://api.live.bilibili.com/xlive/web-ucenter/user/following" # need SESSDATA
+	
+	get_cids_by_aid = "https://api.bilibili.com/x/web-interface/view"
+	get_play_url = "https://api.bilibili.com/x/player/playurl"
 
 #    danmaku_host = "wss://broadcastlv.chat.bilibili.com:2245/sub"
     danmaku_host = "wss://ks-live-dmcmt-sh2-pm-03.chat.bilibili.com/sub"
