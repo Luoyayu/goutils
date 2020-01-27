@@ -20,11 +20,12 @@ func playVideo(ctx context.Context, aid interface{}, durl string, title string) 
 	}, ",")
 	header = `--http-header-fields=` + header
 	var playArgs []string
-	// HACK for osx
 
-	playArgs = []string{header, "--force-media-title=" + title, "--hwdec=auto-safe" + durl}
+	playArgs = []string{header, "--force-media-title=" + title, "--hwdec=auto", durl}
 
 	cmd := exec.Command(mpv, playArgs...)
+
+	//Logger.Info("run %v\n", cmd.String())
 
 	out := &bytes.Buffer{}
 	cmd.Stdout = out
@@ -35,7 +36,7 @@ func playVideo(ctx context.Context, aid interface{}, durl string, title string) 
 		MpvPid = int32(cmd.Process.Pid)
 	}
 
-	//Logger.Info("mpv pid:", cmd.Process.Pid)
+	Logger.Info("mpv pid:", cmd.Process.Pid)
 
 	// check
 	/*go func(out *bytes.Buffer) {
@@ -49,8 +50,8 @@ func playVideo(ctx context.Context, aid interface{}, durl string, title string) 
 				time.Sleep(time.Second * 1)
 			}
 		}
-	}(out)*/
-
+	}(out)
+*/
 	select {
 	case <-ctx.Done():
 		stopMpvSafely()

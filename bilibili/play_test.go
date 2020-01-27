@@ -6,7 +6,7 @@ import (
 )
 
 func TestGetPlayFromCDN(t *testing.T) {
-	ret, err := GetPlayUrl(0, 0, 80, "")
+	ret, err := GetPlayUrl(36607048, 64249025, 80, "")
 	if err != nil {
 		panic(err)
 	}

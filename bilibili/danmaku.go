@@ -185,7 +185,10 @@ func (r *DanmakuClient) handleRecMsgType(msg []byte) {
 		case 1: // 恭喜 ...
 
 		case 2: // 礼物 ...
+			//log.Printf("%+v\n", jsonMap)
+
 			businessId := jsonMap["business_id"].(string)
+			//businessName := ""
 			linkUrl := jsonMap["link_url"].(string)
 			msgCommon := jsonMap["msg_common"].(string)
 			_ = int64(jsonMap["real_roomid"].(float64))
@@ -217,7 +220,9 @@ func (r *DanmakuClient) handleRecMsgType(msg []byte) {
 	}
 }
 
-var businessIdMap = map[string]string{
+var businessIdMap = map[string]string{ // 互动型礼物
 	"25":    "小电视飞船",
+	"39":    "节奏风暴",
 	"20003": "摩天大楼",
+	"30436": "1219蘑菇方舟",
 }

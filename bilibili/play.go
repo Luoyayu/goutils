@@ -51,8 +51,8 @@ type GetCidByAidRetData struct {
 
 // parts
 func GetCidByAid(aid interface{}) (rett *GetCidByAidRet, err error) {
-	req := &http.Request{}
-	req.Header.Add("Host", "api.bilibili.com")
+	req := &http.Request{Header: http.Header{}}
+	req.Header.Set("Host", "api.bilibili.com")
 
 	if ret, err := GetWithReq(Config.API.GetCIdsByAId, map[string]interface{}{
 		"aid": aid,
@@ -93,8 +93,7 @@ func GetPlayUrl(aid, cid, qn interface{}, SESSDATA string) (rett *GetPlayUrlRet,
 		0:  游客模式(32)
 	*/
 
-	req, _ := http.NewRequest("GET",
-		"https://api.bilibili.com/x/player/playurl"+"?"+l.Encode(), nil)
+	req := &http.Request{Header: http.Header{}}
 	if SESSDATA != "" {
 		req.Header.Set("Cookie", "SESSDATA="+SESSDATA)
 	}

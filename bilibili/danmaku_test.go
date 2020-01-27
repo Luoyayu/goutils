@@ -7,5 +7,5 @@ import (
 
 func TestDanmakuClient_NewDanmakuClient(t *testing.T) {
 	var c = &DanmakuClient{}
-	c.NewDanmakuClient(context.Background(), 21452505)
+	c.NewDanmakuClient(context.Background(), 14085407)
 }

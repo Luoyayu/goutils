@@ -66,7 +66,7 @@ func playLive(ctx context.Context, cid interface{}, params map[string]int, costu
 				playArgs = append(playArgs, "--no-video")
 			}
 
-			playArgs = append(playArgs, "--hwdec=auto-safe")
+			playArgs = append(playArgs, "--hwdec=auto")
 
 			if costumedMpvArgs != "" {
 				playArgs = append(playArgs, strings.Split(costumedMpvArgs, " ")...)

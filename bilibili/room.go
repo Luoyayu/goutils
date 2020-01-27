@@ -100,7 +100,7 @@ func GetLiveMyFollowing(uid int64, SESSDATA string, pn, ps int) (rett *LiveMyFol
 		ps = 20
 	}
 
-	req := &http.Request{}
+	req := &http.Request{Header: http.Header{}}
 	req.Header.Set("Cookie", fmt.Sprintf("INTVER=1;DedeUserID=%v;SESSDATA=%v", uid, SESSDATA))
 
 	ret, err := GetWithReq(Config.API.LiveMyFollowing, map[string]interface{}{"page": pn, "page_size": ps}, req, &LiveMyFollowingRet{})
@@ -130,7 +130,7 @@ type LiveUserRecommendRet struct {
 
 // ps = 30
 func GetLiveUserRecommend(uid interface{}, SESSDATA interface{}, pn int) (rett *LiveUserRecommendRet, err error) { // need login
-	req := &http.Request{}
+	req := &http.Request{Header: http.Header{}}
 	req.Header.Set("Cookie", fmt.Sprintf("INTVER=1;DedeUserID=%v;SESSDATA=%v", uid, SESSDATA))
 
 	ret, err := GetWithReq(Config.API.LiveGetUserRecommend, map[string]interface{}{"page": pn}, req, &LiveUserRecommendRet{})
