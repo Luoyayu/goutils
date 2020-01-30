@@ -93,6 +93,19 @@ func pageVideoSelect(uid interface{}) {
 }
 
 func pageVideoPartSelect(aid, uid interface{}) {
+	var bangumi *biliAPI.BangumiInitialSate
+	var err error
+
+	if PlayBangumi {
+		if bangumi, err = biliAPI.GetBangumiInitialSate(aid); err == nil && bangumi != nil {
+			aid = bangumi.EpList[0].Aid
+		} else {
+			Logger.Error("No such bangumi: ep", aid)
+			pageFollowingCmdPlay()
+			return
+		}
+	}
+
 	cIds, err := biliAPI.GetCidByAid(aid)
 	if err != nil {
 		Logger.Error(err)
@@ -107,6 +120,12 @@ func pageVideoPartSelect(aid, uid interface{}) {
 	}
 
 	partOptions := make([]string, 0, len(cIds.Data.Pages)+3)
+
+	if PlayBangumi {
+		for i, b := range bangumi.EpList {
+			cIds.Data.Pages[i].Part = b.TitleFormat + b.LongTitle + " " + b.Badge
+		}
+	}
 
 	for _, ff := range cIds.Data.Pages {
 		partOptions = append(partOptions, fmt.Sprint(ff.Page, ": ", ff.Part, " ", time.Duration(ff.Duration*1000000000)))
@@ -211,27 +230,48 @@ func pageControlPartVideo(aid, cid, uid interface{}) {
 	}
 }
 
+var PlayBangumi = false // repair part name
+
 func pageFollowingCmdPlay() {
 	input := PromptInput(&survey.Input{
-		Message: "av:XXXX",
+		Message: "avXXXX / epYYYY", // avXXX/epXXX ep->av
 		Default: "",
 		Help:    "",
 	}, survey.WithValidator(func(ans interface{}) error {
-		if strings.HasPrefix(fmt.Sprint(ans), "av:") == false {
-			return errors.New("input must start with `av:`")
+		if strings.HasPrefix(fmt.Sprint(ans), "av") == false &&
+			strings.HasPrefix(fmt.Sprint(ans), "ep") == false {
+			return errors.New("input must start with `av` or `ep`")
 		}
 		return nil
 	}))
 
-	aid := strings.TrimSpace(strings.TrimLeft(input, "av:"))
+	aid := ""
+	var uid int64
+
+	if strings.HasPrefix(input, "av") {
+		PlayBangumi = false
+		aid = strings.TrimSpace(strings.TrimLeft(input, "av"))
+		cids, err := biliAPI.GetCidByAid(aid)
+		if err != nil || cids.Data == nil {
+			Logger.Error("No such video: av", aid)
+			pageFollowingCmdPlay()
+			return
+		} else {
+			uid = cids.Data.Owner.Mid
+		}
+
+	} else if strings.HasPrefix(input, "ep") {
+		PlayBangumi = true
+		aid = strings.TrimSpace(strings.TrimLeft(input, "ep"))
+	}
+
 	if aid == "" {
 		showPageFollowing()
 		return
 	}
 
-	cids, _ := biliAPI.GetCidByAid(aid)
-	uid := cids.Data.Owner.Mid
 	back2PageFollowing = true
+
 	pageVideoPartSelect(aid, uid)
 }
 

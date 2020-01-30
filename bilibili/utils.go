@@ -40,8 +40,11 @@ func GetWithReq(tUrl string, params map[string]interface{}, req *http.Request, i
 	var resp *http.Response
 	if resp, err = (&http.Client{}).Do(req); err == nil {
 		defer resp.Body.Close()
+
 		//b, _ := ioutil.ReadAll(resp.Body)
 		//log.Println(string(b))
+		//err = json.NewDecoder(bytes.NewReader(b)).Decode(&in)
+
 		err = json.NewDecoder(resp.Body).Decode(&in)
 		if err != nil {
 			return

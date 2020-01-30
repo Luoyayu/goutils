@@ -1,7 +1,7 @@
 package main
 
 import (
-	bot "github.com/luoyayu/goutils/tg-channels-bot"
+	"github.com/luoyayu/goutils/tg_channels_bot"
 	"log"
 	"sync"
 	"time"

@@ -9,7 +9,7 @@ func main() {
 	bot := &tgbotapi.BotAPI{}
 	bot.Debug = true
 	var err error
-	bot, err = tgbotapi.NewBotAPI("1058178782:AAHIN3JG50FhRKUPAyJoVHO42ZP1CFwWX9Q")
+	bot, err = tgbotapi.NewBotAPI("")
 	if err != nil {
 		panic(err)
 	} else {

@@ -44,7 +44,7 @@ type GetCidByAidRetData struct {
 		Cid      int64  `json:"cid"`
 		Page     int    `json:"page"`
 		From     string `json:"from"`
-		Part     string `json:"part"` // part name
+		Part     string `json:"part"` // part name * repair for bangumi!
 		Duration int    `json:"duration"`
 	} `json:"pages"`
 }
@@ -131,7 +131,7 @@ func DownloadVideo(aid interface{}, p int, qn int, SESSDATA string, coLimit int6
 
 		//done := make(chan int64)
 
-		fileName := fmt.Sprint("av", aid, "-", cids.Data.Title, "-", p, title, ".flv")
+		fileName := fmt.Sprint("av", aid, "-", cids.Data.Title, "-", p, "-", title, ".flv")
 
 		log.Printf("准备下载 %s %s, 预计大小 %.1f %s\n", fileName, playUrl.Data.Format, float64(size)/1024/1024, "MBytes")
 		f, _ := os.Create(fileName)
@@ -145,7 +145,7 @@ func DownloadVideo(aid interface{}, p int, qn int, SESSDATA string, coLimit int6
 		//go net.PrintLoadProgress(done, fileName, size)
 
 		if coLimit <= 0 {
-			coLimit = 20 // 默认 20 协程
+			coLimit = 10 // 默认 10 协程
 		}
 		blockSize := size / coLimit // 每个协程下载大小
 		lastSize := size % coLimit  // 最后一个额外协程下载大小
